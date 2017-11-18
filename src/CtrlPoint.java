@@ -1,10 +1,6 @@
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 
-/*
-    Should points keep track of their neighbors?
-* */
-
 public class CtrlPoint extends Point{
 
     private boolean moveable;

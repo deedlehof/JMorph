@@ -14,15 +14,15 @@ public class GridPairController {
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
-                System.out.println("MOUSE PRESSED ON GRID 1");
                 activePnt1 = grid1.getDragPoint();
-                System.out.println(activePnt1.getGridX());
-                grid2.changeActivePoint(activePnt1.getGridX(), activePnt1.getGridY(), true);
+                if(activePnt1 != null)
+                    grid2.changeActivePoint(activePnt1.getGridX(), activePnt1.getGridY(), true);
             }
 
             public void mouseReleased(MouseEvent e){
                 super.mouseReleased(e);
-                grid2.changeActivePoint(activePnt1.getGridX(), activePnt1.getGridY(), false);
+                if(activePnt1 != null)
+                    grid2.changeActivePoint(activePnt1.getGridX(), activePnt1.getGridY(), false);
             }
         });
 
@@ -31,12 +31,14 @@ public class GridPairController {
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
                 activePnt2 = grid2.getDragPoint();
-                grid1.changeActivePoint(activePnt2.getGridX(), activePnt2.getGridY(), true);
+                if(activePnt2 != null)
+                    grid1.changeActivePoint(activePnt2.getGridX(), activePnt2.getGridY(), true);
             }
 
             public void mouseReleased(MouseEvent e){
                 super.mouseReleased(e);
-                grid1.changeActivePoint(activePnt2.getGridX(), activePnt2.getGridY(), false);
+                if(activePnt2 != null)
+                    grid1.changeActivePoint(activePnt2.getGridX(), activePnt2.getGridY(), false);
             }
         });
     }

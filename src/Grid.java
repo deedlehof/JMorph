@@ -3,10 +3,12 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.awt.image.BufferedImage;
+import java.io.Serializable;
 
-public class Grid extends JPanel {
+public class Grid extends JPanel implements Serializable{
 
-    private int width, height; //static? will the two grids ever be different sizes?
+    private int width, height;
     private boolean isDragging = false;
     private CtrlPoint dragPoint = null;
 
@@ -18,6 +20,8 @@ public class Grid extends JPanel {
 
     private boolean drawTriangles = true;
     private int radius = 5;
+
+    private BufferedImage backgroundImg;
 
     public Grid(int _width, int _height){
         this.width = _width + 2; //add two for edge points
@@ -92,6 +96,10 @@ public class Grid extends JPanel {
         repaint();
     }
 
+    public CtrlPoint[][] getPntList(){
+        return pntList;
+    }
+
     private void generateTriangles(){
         triangleList = new CtrlTriangle[((width-1)*(height-1))*2];
 
@@ -113,6 +121,10 @@ public class Grid extends JPanel {
                 placeCount++;
             }
         }
+    }
+
+    public CtrlTriangle[] getTriangleList(){
+        return triangleList;
     }
 
     public CtrlPoint getDragPoint() {
