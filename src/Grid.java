@@ -174,16 +174,18 @@ public class Grid extends JPanel implements Serializable{
             }
         }
 
-        //TODO draw based on points not triangles to avoid redrawing
         if(drawTriangles){
-            for(int i = 0; i < triangleList.length; i++){
-                CtrlTriangle currTriangle = triangleList[i];
-                g.drawLine(currTriangle.c1.x, currTriangle.c1.y,
-                        currTriangle.c2.x, currTriangle.c2.y);
-                g.drawLine(currTriangle.c2.x, currTriangle.c2.y,
-                        currTriangle.c3.x, currTriangle.c3.y);
-                g.drawLine(currTriangle.c3.x, currTriangle.c3.y,
-                        currTriangle.c1.x, currTriangle.c1.y);
+            for(int y = 0; y < height-1; y++){
+                for(int x = 0; x < width-1; x++){
+                    g.drawLine(pntList[x][y].x, pntList[x][y].y, pntList[x+1][y].x, pntList[x+1][y].y);
+                    g.drawLine(pntList[x][y].x, pntList[x][y].y, pntList[x+1][y+1].x, pntList[x+1][y+1].y);
+                    g.drawLine(pntList[x][y].x, pntList[x][y].y, pntList[x][y+1].x, pntList[x][y+1].y);
+                }
+                g.drawLine(pntList[width-1][y].x, pntList[width-1][y].y, pntList[width-1][y+1].x, pntList[width-1][y+1].y);
+            }
+
+            for(int x = 0; x < width-1; x++){
+                g.drawLine(pntList[x][height-1].x, pntList[x][height-1].y, pntList[x+1][height-1].x, pntList[x+1][height-1].y);
             }
         }
     }
