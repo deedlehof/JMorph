@@ -25,7 +25,7 @@ public class TransitionFrame extends JFrame{
         doTransitionBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                transitionGrid.morphGrid(grid2.getPntList(), seconds, framesPerSecond);
+                transitionGrid.morphGrid(grid2.getCopyPntList(), seconds, framesPerSecond);
             }
         });
 

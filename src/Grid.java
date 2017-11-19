@@ -86,7 +86,7 @@ public class Grid extends JPanel implements Serializable{
 
     public Grid(Grid cpyGrid){
         this(cpyGrid.width-2, cpyGrid.height-2);
-        this.pntList = cpyGrid.getPntList();
+        this.pntList = cpyGrid.getCopyPntList();
     }
 
     private void generatePoints(){
@@ -109,6 +109,18 @@ public class Grid extends JPanel implements Serializable{
 
     public CtrlPoint[][] getPntList(){
         return pntList;
+    }
+
+    public CtrlPoint[][] getCopyPntList(){
+        CtrlPoint[][] cpyPnts = new CtrlPoint[width][height];
+        for(int y = 0; y < height; y++){
+            for(int x = 0; x < width; x++){
+                CtrlPoint currPnt = pntList[x][y];
+                cpyPnts[x][y] = new CtrlPoint(currPnt.x, currPnt.y, x, y, currPnt.isMoveable());
+            }
+        }
+
+        return cpyPnts;
     }
 
     private void generateTriangles(){
@@ -143,6 +155,11 @@ public class Grid extends JPanel implements Serializable{
     }
 
     public void changeActivePoint(int gridX, int gridY, boolean pntStatus){
+        if(dragPoint != null){
+            dragPoint.setStatus(false);
+            dragPoint = null;
+            isDragging = false;
+        }
         pntList[gridX][gridY].setStatus(pntStatus);
         if(pntStatus)
             repaint();
