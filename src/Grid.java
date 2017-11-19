@@ -68,7 +68,12 @@ public class Grid extends JPanel implements Serializable{
                 super.mouseDragged(e);
                 if(isDragging){
                     if(dragPoint != null && dragPoint.isMoveable()){
-                        dragPoint.setLocation(e.getPoint());
+                        Point currPnt = e.getPoint();
+                        if(currPnt.x < 0) { currPnt.x = 0; }
+                        if(currPnt.y < 0) { currPnt.y = 0; }
+                        if(currPnt.x > getWidth()) { currPnt.x = getWidth(); }
+                        if(currPnt.y > getHeight()) { currPnt.y = getHeight(); }
+                        dragPoint.setLocation(currPnt);
                         repaint();
                     }
 
