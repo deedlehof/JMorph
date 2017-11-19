@@ -6,6 +6,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
 
+//the entire class can be serialized for the two graphs
 public class Grid extends JPanel implements Serializable{
 
     private int width, height;
@@ -78,6 +79,11 @@ public class Grid extends JPanel implements Serializable{
 
     }
 
+    public Grid(Grid cpyGrid){
+        this(cpyGrid.width-2, cpyGrid.height-2);
+        this.pntList = cpyGrid.getPntList();
+    }
+
     private void generatePoints(){
         pntList = new CtrlPoint[width][height];
 
@@ -137,6 +143,14 @@ public class Grid extends JPanel implements Serializable{
             repaint();
     }
 
+    public void setGridImmovable(boolean move){
+        for(int y = 1; y < height-1; y++){
+            for(int x = 1; x < width-1; x++){
+                pntList[x][y].setMoveable(!move);
+            }
+        }
+    }
+
     public void setGridResolution(int _width, int _height){
         this.width = _width;
         this.height = _height;
@@ -145,6 +159,10 @@ public class Grid extends JPanel implements Serializable{
         generateTriangles();
         repaint();
     }
+
+    public int getGridWidth(){ return width; }
+
+    public int getGridHeight() { return height; }
 
     public void setPntRadius(int _radius){
         this.radius = _radius;
@@ -156,23 +174,62 @@ public class Grid extends JPanel implements Serializable{
         repaint();
     }
 
+    public void morphGrid(CtrlPoint[][] points, int seconds, int framesPerSecond){
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                applyMorph(points, seconds, framesPerSecond);
+            }
+        });
+        t.start();
+    }
+
+    //super basic morph
+    //just wanted to do a proof of concept.
+    //not sure if this is how we should do it in the finished product
+    //uses PointInitial + percent*(PointFinal - PointInitial)
+    private void applyMorph(CtrlPoint[][] points, int seconds, int framesPerSecond){
+        double xDifference[][] = new double[width][height];
+        double yDifference[][] = new double[width][height];
+        int xOriginal[][] = new int[width][height];
+        int yOriginal[][] = new int[width][height];
+
+        for(int y = 1; y < height-1; y++){
+            for(int x = 1; x < width-1; x++){
+                xDifference[x][y] = points[x][y].x - pntList[x][y].x;
+                yDifference[x][y] = points[x][y].y - pntList[x][y].y;
+                xOriginal[x][y] = pntList[x][y].x;
+                yOriginal[x][y] = pntList[x][y].y;
+            }
+        }
+
+        int sleepTime = 1000/framesPerSecond;
+        int loopCount = seconds*framesPerSecond;
+        for(int i = 0; i < loopCount; i++){
+            double percent = (i+1)/(double)loopCount;
+            for(int y = 1; y < height-1; y++){
+                for(int x = 1; x < width-1; x++){
+                    int xDiff = (int)(percent*xDifference[x][y]);
+                    int yDiff = (int)(percent*yDifference[x][y]);
+                    pntList[x][y].x = xOriginal[x][y] + xDiff;
+                    pntList[x][y].y = yOriginal[x][y] + yDiff;
+                }
+            }
+
+            repaint();
+
+            try {
+                Thread.sleep(sleepTime);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-
-        for(int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                CtrlPoint currPnt = pntList[x][y];
-                if(currPnt.getStatus()){
-                    g.setColor(activeColor);
-                } else {
-                    g.setColor(baseColor);
-                }
-                if(currPnt.isMoveable()) {
-                    g.fillOval((int)currPnt.getX() - radius, (int)currPnt.getY() - radius, radius*2, radius*2);
-                }
-            }
-        }
 
         if(drawTriangles){
             for(int y = 0; y < height-1; y++){
@@ -186,6 +243,18 @@ public class Grid extends JPanel implements Serializable{
 
             for(int x = 0; x < width-1; x++){
                 g.drawLine(pntList[x][height-1].x, pntList[x][height-1].y, pntList[x+1][height-1].x, pntList[x+1][height-1].y);
+            }
+        }
+
+        for(int y = 1; y < height-1; y++) {
+            for (int x = 1; x < width-1; x++) {
+                CtrlPoint currPnt = pntList[x][y];
+                if(currPnt.getStatus()){
+                    g.setColor(activeColor);
+                } else {
+                    g.setColor(baseColor);
+                }
+                g.fillOval((int)currPnt.getX() - radius, (int)currPnt.getY() - radius, radius*2, radius*2);
             }
         }
     }

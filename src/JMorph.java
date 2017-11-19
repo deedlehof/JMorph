@@ -6,14 +6,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class JMorph extends JFrame {
-    Container cont;
-    Grid leftGrid, rightGrid;
-    JPanel settings; //contains slider bar and buttons
-    JButton morph;
-    JSlider ctrlPts;
-    JMenuBar menu; //contain exit, restart, settings, etc.?
-    GridBagLayout layout;
-    JPanel screen;
+    private Container cont;
+    private Grid leftGrid, rightGrid;
+    private JPanel settings; //contains slider bar and buttons
+    private JButton morph;
+    private JSlider ctrlPts;
+    private JMenuBar menu; //contain exit, restart, settings, etc.?
+    private GridBagLayout layout;
+    private JPanel screen;
 
     private GridPairController gridControl;
 
@@ -31,7 +31,7 @@ public class JMorph extends JFrame {
         setVisible(true);
     }
 
-    void setupMenuBar()
+    private void setupMenuBar()
     {
         menu = new JMenuBar();
         JMenu file = new JMenu("File");
@@ -54,7 +54,7 @@ public class JMorph extends JFrame {
         this.setJMenuBar(menu);
     }
 
-    void setupUI()
+    private void setupUI()
     {
         layout = new GridBagLayout(); //gridBagLayout is flexible
         screen.setLayout(layout); //use to organize the main screen
@@ -68,7 +68,7 @@ public class JMorph extends JFrame {
         leftGridConst.ipadx = leftGrid.getWidth(); //sets the "size" of the grid or how much space it can take up--need to customize based on number of ctrl pts
         leftGridConst.ipady = leftGrid.getHeight();
         leftGridConst.fill = GridBagConstraints.BOTH;
-        //leftGrid.setBackground(Color.BLUE);
+        leftGrid.setBackground(Color.BLUE);
         screen.add(leftGrid, leftGridConst);
 
         GridBagConstraints rightGridConst = new GridBagConstraints();
@@ -85,7 +85,7 @@ public class JMorph extends JFrame {
         cont.add(screen, BorderLayout.CENTER);
     }
 
-    void setupSettingsPanel()
+    private void setupSettingsPanel()
     {
         settings = new JPanel();
 
@@ -93,15 +93,15 @@ public class JMorph extends JFrame {
         morph.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                TransitionFrame morphFrame = new TransitionFrame(leftGrid, rightGrid);
             }
         });
 
-        ctrlPts = new JSlider();
+        ctrlPts = new JSlider(3, 25);
         ctrlPts.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                /*Change control pts dynamically--can we do that w/o resetting image? probably*/
+                gridControl.setGridResolution(ctrlPts.getValue(), ctrlPts.getValue());
             }
         });
 
