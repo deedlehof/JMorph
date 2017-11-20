@@ -4,16 +4,20 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
 
 public class JMorph extends JFrame {
     private Container cont;
     private Grid leftGrid, rightGrid;
     private JPanel settings; //contains slider bar and buttons
-    private JButton morph;
+    private JButton morph, leftImg, rightImg, preview;
     private JSlider ctrlPts;
     private JMenuBar menu; //contain exit, restart, settings, etc.?
     private GridBagLayout layout;
     private JPanel screen;
+    JTextArea inputDuration;
+    JLabel durationDesc, ptsDesc;
 
     private GridPairController gridControl;
 
@@ -88,8 +92,9 @@ public class JMorph extends JFrame {
     private void setupSettingsPanel()
     {
         settings = new JPanel();
+        settings.setLayout(new GridLayout(6,2));
 
-        morph = new JButton();
+        morph = new JButton("Start Morph");
         morph.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -97,6 +102,19 @@ public class JMorph extends JFrame {
             }
         });
 
+        preview = new JButton("Preview Morph");
+        preview.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                /*Start morph preview*/
+            }
+        });
+
+        durationDesc = new JLabel("Enter the duration of the morph (seconds):");
+        inputDuration = new JTextArea("0");
+        inputDuration.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
+        ptsDesc = new JLabel("Select control point resolution:");
         ctrlPts = new JSlider(3, 25);
         ctrlPts.addChangeListener(new ChangeListener() {
             @Override
@@ -104,17 +122,79 @@ public class JMorph extends JFrame {
                 gridControl.setGridResolution(ctrlPts.getValue(), ctrlPts.getValue());
             }
         });
+        ctrlPts.setMajorTickSpacing(10);
+        ctrlPts.setMinorTickSpacing(1);
+        ctrlPts.setPaintTicks(true);
+
+        leftImg = new JButton("Set left image"); //set image in left grid
+        leftImg.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser jfc = new JFileChooser(".");
+                jfc.showDialog(null, "Select a file");
+                jfc.setVisible(true);
+                File path = jfc.getSelectedFile();
+                if(path != null)
+                {
+                    System.out.println("File selected: " + path.getPath());
+                    setImage(leftGrid, path.getName());//temp
+                }
+                //setImage(leftGrid, "turkey.JPG");
+                /*Popup file selector, get data from it*/
+            }
+        });
+
+        rightImg = new JButton("Set right image"); //set image in right grid
+        rightImg.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                /*Popup file selector, get data from it*/
+                JFileChooser jfc = new JFileChooser(".");
+                jfc.showDialog(null, "Select a file");
+                jfc.setVisible(true);
+                File path = jfc.getSelectedFile();
+                if(path != null) {
+                    System.out.println("File selected: " + path.getName());
+                    setImage(rightGrid, path.getName());//temp
+                }
+                //setImage(rightGrid, "turkey.JPG");
+            }
+        });
 
         settings.add(morph);
+        settings.add(preview);
+        settings.add(durationDesc);
+        settings.add(inputDuration);
+        settings.add(ptsDesc);
         settings.add(ctrlPts);
+        settings.add(leftImg);
+        settings.add(rightImg);
 
         GridBagConstraints setConst = new GridBagConstraints();
-        setConst.gridx = 1;
-        setConst.gridy = 0;
-        setConst.ipadx = 100;
-        setConst.ipady = 500;
-        setConst.fill = GridBagConstraints.VERTICAL;
+        setConst.gridx = 0;
+        setConst.gridy = 2;
+        setConst.ipadx = 50;
+        setConst.ipady = 0;
+        setConst.fill = GridBagConstraints.CENTER;
         screen.add(settings, setConst);
+    }
+
+    //Set the image in a particular grid
+    public void setImage(Grid g, String path)
+    {
+        Image img = new ImageIcon(this.getClass().getResource(path)).getImage();
+
+        MediaTracker tracker = new MediaTracker(new Component() {});
+        tracker.addImage(img, 0);
+
+        try { tracker.waitForID(0); }
+        catch(InterruptedException e){ System.out.println("exception");}
+
+        System.out.println(img.getWidth(this) + " " + img.getHeight(this));
+        BufferedImage buf = new BufferedImage(g.getWidth(), g.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D bg = buf.createGraphics();
+        bg.drawImage(img, g.getX(), g.getY(), null);
+        g.setImg(buf);
     }
 
     public static void main(String args[]){

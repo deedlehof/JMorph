@@ -7,7 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.Serializable;
 
 //the entire class can be serialized for the two graphs
-public class Grid extends JPanel implements Serializable{
+public class Grid extends JLabel implements Serializable{
 
     private int width, height;
     private boolean isDragging = false;
@@ -22,7 +22,8 @@ public class Grid extends JPanel implements Serializable{
     private boolean drawTriangles = true;
     private int radius = 5;
 
-    private BufferedImage backgroundImg;
+    private BufferedImage origImg;
+    boolean hasImg = false;
 
     public Grid(int _width, int _height){
         this.width = _width + 2; //add two for edge points
@@ -249,9 +250,21 @@ public class Grid extends JPanel implements Serializable{
 
     }
 
+    public void setImg(BufferedImage i)
+    {
+        origImg = i;
+        hasImg = true;
+        this.repaint();
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+
+        if(hasImg) {
+            Graphics2D bg = (Graphics2D) g;
+            bg.drawImage(origImg, getX(), getY(), null);
+        }
 
         if(drawTriangles){
             for(int y = 0; y < height-1; y++){
