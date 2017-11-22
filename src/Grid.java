@@ -197,11 +197,11 @@ public class Grid extends JLabel implements Serializable{
         repaint();
     }
 
-    public void morphGrid(CtrlPoint[][] points, int seconds, int framesPerSecond){
+    public void morphGrid(Grid destGrid, int seconds, int framesPerSecond){
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-                applyMorph(points, seconds, framesPerSecond);
+                applyMorph(destGrid, seconds, framesPerSecond);
             }
         });
         t.start();
@@ -211,14 +211,27 @@ public class Grid extends JLabel implements Serializable{
     //just wanted to do a proof of concept.
     //not sure if this is how we should do it in the finished product
     //uses PointInitial + percent*(PointFinal - PointInitial)
-    private void applyMorph(CtrlPoint[][] points, int seconds, int framesPerSecond){
+    private void applyMorph(Grid destGrid, int seconds, int framesPerSecond){
+
+        CtrlPoint[][] points = destGrid.getCopyPntList();
+        /*
+        double imgWidthDiff, imgHeightDiff;
+        int originalWidth, originalHeight;
+
+        imgWidthDiff = this.getWidth() - destGrid.getWidth();
+        imgHeightDiff = this.getHeight() - destGrid.getHeight();
+        originalWidth = this.getWidth();
+        originalHeight = this.getHeight();
+        */
+
+
         double xDifference[][] = new double[width][height];
         double yDifference[][] = new double[width][height];
         int xOriginal[][] = new int[width][height];
         int yOriginal[][] = new int[width][height];
 
-        for(int y = 1; y < height-1; y++){
-            for(int x = 1; x < width-1; x++){
+        for(int y = 0; y < height; y++){
+            for(int x = 0; x < width; x++){
                 xDifference[x][y] = points[x][y].x - pntList[x][y].x;
                 yDifference[x][y] = points[x][y].y - pntList[x][y].y;
                 xOriginal[x][y] = pntList[x][y].x;
@@ -230,16 +243,22 @@ public class Grid extends JLabel implements Serializable{
         int loopCount = seconds*framesPerSecond;
         for(int i = 0; i < loopCount; i++){
             double percent = (i+1)/(double)loopCount;
-            for(int y = 1; y < height-1; y++){
-                for(int x = 1; x < width-1; x++){
+            for(int y = 0; y < height; y++){
+                for(int x = 0; x < width; x++){
                     int xDiff = (int)(percent*xDifference[x][y]);
                     int yDiff = (int)(percent*yDifference[x][y]);
                     pntList[x][y].x = xOriginal[x][y] + xDiff;
                     pntList[x][y].y = yOriginal[x][y] + yDiff;
                 }
             }
+            /*
+            int imgWidth = (int) (originalWidth + percent*imgWidthDiff);
+            int imgHeight = (int) (originalHeight + percent*imgHeightDiff);
+            this.setSize(imgWidth, imgHeight);
+            */
 
-            repaint();
+
+            this.repaint();
 
             try {
                 Thread.sleep(sleepTime);
@@ -254,6 +273,9 @@ public class Grid extends JLabel implements Serializable{
     {
         origImg = i;
         hasImg = true;
+        //change width the point generator must traverse
+        this.setSize(i.getWidth(), i.getHeight());
+        generatePoints();
         this.repaint();
     }
 

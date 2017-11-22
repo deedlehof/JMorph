@@ -10,28 +10,38 @@ import java.io.File;
 public class JMorph extends JFrame {
     private Container cont;
     private Grid leftGrid, rightGrid;
-    private JPanel settings; //contains slider bar and buttons
-    private JButton morph, leftImg, rightImg, preview;
+    private JPanel master, settings, settingsScreen, morphButtons, ctrlPtBar, frameEntry, setPictures, fpsEntry; //contains slider bar and buttons
+    private JButton morph, leftImg, rightImg, preview; //need reset (prompt before actually resetting)
     private JSlider ctrlPts;
     private JMenuBar menu; //contain exit, restart, settings, etc.?
     private GridBagLayout layout;
-    private JPanel screen;
-    JTextArea inputDuration;
-    JLabel durationDesc, ptsDesc;
+    private JPanel screen, rightGridScrn, leftGridScrn;
+    private JTextArea inputDuration, inputFPS;
+    private JLabel durationDesc, ptsDesc, fpsDesc;
+    private GridBagConstraints leftGridConst, rightGridConst;
+    public final static double MAX_DIMENSION = 400; //current max allowable size for the grid
 
     private GridPairController gridControl;
 
     public JMorph(){
         super("Morpher");
         cont = getContentPane();
-        screen = new JPanel(); //will hold the components (grids, button panel, etc)
+        master = new JPanel(); //holds everything
+        screen = new JPanel(); //will hold the grids
+        rightGridScrn = new JPanel();
+        leftGridScrn = new JPanel();
+        settingsScreen = new JPanel(); // holds settings
+        leftGridConst = new GridBagConstraints();
+        rightGridConst = new GridBagConstraints();
+
         setupMenuBar();
         setupUI();
 
         gridControl = new GridPairController(leftGrid, rightGrid);
 
         pack();
-        setSize(screen.getPreferredSize());
+        Dimension frameSize = master.getPreferredSize();
+        setSize(frameSize.width + 50, frameSize.height + 100);
         setVisible(true);
     }
 
@@ -60,45 +70,63 @@ public class JMorph extends JFrame {
 
     private void setupUI()
     {
+        master.setLayout(new BoxLayout(master, BoxLayout.Y_AXIS));
+
         layout = new GridBagLayout(); //gridBagLayout is flexible
-        screen.setLayout(layout); //use to organize the main screen
+        rightGridScrn.setLayout(layout); //use to organize the main screen
+        leftGridScrn.setLayout(layout); //use to organize the main screen
 
         leftGrid = new Grid(10, 10);
         rightGrid = new Grid(10, 10);
 
-        GridBagConstraints leftGridConst = new GridBagConstraints();
         leftGridConst.gridx = 0;
         leftGridConst.gridy = 0;
         leftGridConst.ipadx = leftGrid.getWidth(); //sets the "size" of the grid or how much space it can take up--need to customize based on number of ctrl pts
         leftGridConst.ipady = leftGrid.getHeight();
         leftGridConst.fill = GridBagConstraints.BOTH;
-        leftGrid.setBackground(Color.BLUE);
-        screen.add(leftGrid, leftGridConst);
+        leftGridScrn.add(leftGrid, leftGridConst);
 
-        GridBagConstraints rightGridConst = new GridBagConstraints();
+        rightGridScrn.setLayout(layout);
         rightGridConst.gridx = 2;
         rightGridConst.gridy = 0;
-        rightGridConst.ipadx = leftGrid.getWidth();
-        rightGridConst.ipady = leftGrid.getHeight();
+        rightGridConst.ipadx = rightGrid.getWidth();
+        rightGridConst.ipady = rightGrid.getHeight();
         rightGridConst.fill = GridBagConstraints.BOTH;
-        //rightGrid.setBackground(Color.GREEN);
-        screen.add(rightGrid, rightGridConst);
+        rightGridScrn.add(rightGrid, rightGridConst);
 
+        screen.add(leftGridScrn);
+        screen.add(rightGridScrn);
+
+        master.add(screen);
         setupSettingsPanel();
 
-        cont.add(screen, BorderLayout.CENTER);
+        cont.add(master, BorderLayout.CENTER);
+    }
+
+    private boolean isInteger(String str) {
+        int size = str.length();
+
+        for (int i = 0; i < size; i++) {
+            if (!Character.isDigit(str.charAt(i))) {
+                return false;
+            }
+        }
+
+        return size > 0;
     }
 
     private void setupSettingsPanel()
     {
         settings = new JPanel();
-        settings.setLayout(new GridLayout(6,2));
+        settings.setLayout(new BoxLayout(settings, BoxLayout.Y_AXIS));
 
+
+        morphButtons = new JPanel();
+        morphButtons.setLayout(new BoxLayout(morphButtons, BoxLayout.X_AXIS));
         morph = new JButton("Start Morph");
         morph.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                TransitionFrame morphFrame = new TransitionFrame(leftGrid, rightGrid);
             }
         });
 
@@ -107,14 +135,40 @@ public class JMorph extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 /*Start morph preview*/
+                int fps = 30;
+                if(isInteger(inputFPS.getText()))
+                    fps = Integer.parseInt(inputFPS.getText());
+
+                int duration = 2;
+                if(isInteger(inputDuration.getText()))
+                    duration = Integer.parseInt(inputDuration.getText());
+
+                TransitionFrame morphFrame = new TransitionFrame(leftGrid, rightGrid, duration, fps);
             }
         });
+        morphButtons.add(morph);
+        morphButtons.add(preview);
 
-        durationDesc = new JLabel("Enter the duration of the morph (seconds):");
-        inputDuration = new JTextArea("0");
+
+        frameEntry = new JPanel();
+        frameEntry.setLayout(new BoxLayout(frameEntry, BoxLayout.X_AXIS));
+        durationDesc = new JLabel("Enter the duration of the morph (seconds): ");
+        inputDuration = new JTextArea("2");
         inputDuration.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        frameEntry.add(durationDesc);
+        frameEntry.add(inputDuration);
 
-        ptsDesc = new JLabel("Select control point resolution:");
+        fpsEntry = new JPanel();
+        fpsEntry.setLayout(new BoxLayout(fpsEntry, BoxLayout.X_AXIS));
+        fpsDesc = new JLabel("Enter the number of frames per second: ");
+        inputFPS = new JTextArea("30");
+        inputFPS.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        fpsEntry.add(fpsDesc);
+        fpsEntry.add(inputFPS);
+
+        ctrlPtBar = new JPanel();
+        ctrlPtBar.setLayout(new BoxLayout(ctrlPtBar, BoxLayout.X_AXIS));
+        ptsDesc = new JLabel("Select control point resolution: ");
         ctrlPts = new JSlider(3, 25);
         ctrlPts.addChangeListener(new ChangeListener() {
             @Override
@@ -125,22 +179,20 @@ public class JMorph extends JFrame {
         ctrlPts.setMajorTickSpacing(10);
         ctrlPts.setMinorTickSpacing(1);
         ctrlPts.setPaintTicks(true);
+        ctrlPtBar.add(ptsDesc);
+        ctrlPtBar.add(ctrlPts);
 
+        setPictures = new JPanel();
+        setPictures.setLayout(new BoxLayout(setPictures, BoxLayout.X_AXIS));
         leftImg = new JButton("Set left image"); //set image in left grid
         leftImg.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JFileChooser jfc = new JFileChooser(".");
-                jfc.showDialog(null, "Select a file");
-                jfc.setVisible(true);
-                File path = jfc.getSelectedFile();
+                File path = getPath();
                 if(path != null)
                 {
-                    System.out.println("File selected: " + path.getPath());
-                    setImage(leftGrid, path.getName());//temp
+                    setImage(leftGrid, path.getAbsolutePath());
                 }
-                //setImage(leftGrid, "turkey.JPG");
-                /*Popup file selector, get data from it*/
             }
         });
 
@@ -149,18 +201,16 @@ public class JMorph extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 /*Popup file selector, get data from it*/
-                JFileChooser jfc = new JFileChooser(".");
-                jfc.showDialog(null, "Select a file");
-                jfc.setVisible(true);
-                File path = jfc.getSelectedFile();
+                File path = getPath();
                 if(path != null) {
-                    System.out.println("File selected: " + path.getName());
-                    setImage(rightGrid, path.getName());//temp
+                    setImage(rightGrid, path.getAbsolutePath());
                 }
-                //setImage(rightGrid, "turkey.JPG");
             }
         });
+        setPictures.add(leftImg);
+        setPictures.add(rightImg);
 
+        /*
         settings.add(morph);
         settings.add(preview);
         settings.add(durationDesc);
@@ -169,20 +219,32 @@ public class JMorph extends JFrame {
         settings.add(ctrlPts);
         settings.add(leftImg);
         settings.add(rightImg);
+        */
+        settings.add(setPictures);
+        settings.add(morphButtons);
+        settings.add(ctrlPtBar);
+        settings.add(frameEntry);
+        settings.add(fpsEntry);
 
-        GridBagConstraints setConst = new GridBagConstraints();
-        setConst.gridx = 0;
-        setConst.gridy = 2;
-        setConst.ipadx = 50;
-        setConst.ipady = 0;
-        setConst.fill = GridBagConstraints.CENTER;
-        screen.add(settings, setConst);
+        settingsScreen.add(settings);
+        master.add(settingsScreen);
+    }
+
+    /*Popup file selector, get data from it*/
+    private File getPath()
+    {
+        JFileChooser jfc = new JFileChooser();
+        jfc.showDialog(null, "Select a file");
+        jfc.setVisible(true);
+        return jfc.getSelectedFile();
     }
 
     //Set the image in a particular grid
     public void setImage(Grid g, String path)
     {
-        Image img = new ImageIcon(this.getClass().getResource(path)).getImage();
+        Image img = new ImageIcon(path).getImage();
+        Dimension scaled = scaleImg(img, g);
+        img = img.getScaledInstance((int)scaled.getWidth(), (int)scaled.getHeight(), Image.SCALE_SMOOTH);
 
         MediaTracker tracker = new MediaTracker(new Component() {});
         tracker.addImage(img, 0);
@@ -190,11 +252,22 @@ public class JMorph extends JFrame {
         try { tracker.waitForID(0); }
         catch(InterruptedException e){ System.out.println("exception");}
 
-        System.out.println(img.getWidth(this) + " " + img.getHeight(this));
-        BufferedImage buf = new BufferedImage(g.getWidth(), g.getHeight(), BufferedImage.TYPE_INT_RGB);
+        BufferedImage buf = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_RGB);
         Graphics2D bg = buf.createGraphics();
         bg.drawImage(img, g.getX(), g.getY(), null);
         g.setImg(buf);
+        bg.dispose();
+    }
+
+    //scale but maintain aspect ratio
+    private Dimension scaleImg(Image i, Grid g)
+    {
+        Dimension d;
+        double widthScale = MAX_DIMENSION / (double)i.getWidth(null);
+        double heightScale = MAX_DIMENSION / (double)i.getHeight(null);
+        double scale = Math.min(widthScale, heightScale);
+        d = new Dimension((int)(i.getWidth(null) * scale), (int)(i.getHeight(null) * scale));
+        return d;
     }
 
     public static void main(String args[]){
