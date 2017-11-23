@@ -11,7 +11,7 @@ public class JMorph extends JFrame {
     private Container cont;
     private Grid leftGrid, rightGrid;
     private JPanel master, settings, settingsScreen, morphButtons, ctrlPtBar, frameEntry, setPictures, fpsEntry; //contains slider bar and buttons
-    private JButton morph, leftImg, rightImg, preview; //need reset (prompt before actually resetting)
+    private JButton morph, leftImg, rightImg, preview, reset;
     private JSlider ctrlPts;
     private JMenuBar menu; //contain exit, restart, settings, etc.?
     private GridBagLayout layout;
@@ -120,13 +120,15 @@ public class JMorph extends JFrame {
         settings = new JPanel();
         settings.setLayout(new BoxLayout(settings, BoxLayout.Y_AXIS));
 
-
         morphButtons = new JPanel();
         morphButtons.setLayout(new BoxLayout(morphButtons, BoxLayout.X_AXIS));
         morph = new JButton("Start Morph");
         morph.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                //check input duration to see how many frames to render
+                leftGrid.resetGrid(); //TODO: implement this method
+                rightGrid.resetGrid();
             }
         });
 
@@ -149,10 +151,9 @@ public class JMorph extends JFrame {
         morphButtons.add(morph);
         morphButtons.add(preview);
 
-
         frameEntry = new JPanel();
         frameEntry.setLayout(new BoxLayout(frameEntry, BoxLayout.X_AXIS));
-        durationDesc = new JLabel("Enter the duration of the morph (seconds): ");
+        durationDesc = new JLabel("Enter the number of seconds:");
         inputDuration = new JTextArea("2");
         inputDuration.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         frameEntry.add(durationDesc);
@@ -210,23 +211,31 @@ public class JMorph extends JFrame {
         setPictures.add(leftImg);
         setPictures.add(rightImg);
 
-        /*
-        settings.add(morph);
-        settings.add(preview);
-        settings.add(durationDesc);
-        settings.add(inputDuration);
-        settings.add(ptsDesc);
-        settings.add(ctrlPts);
-        settings.add(leftImg);
-        settings.add(rightImg);
-        */
+        reset = new JButton("Reset Morph");
+        reset.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //popup confirming reset choice
+                int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to reset the control points?");
+                if(confirm == JOptionPane.YES_OPTION)
+                {
+                    //reset control points
+                }
+            }
+        });
+
         settings.add(setPictures);
         settings.add(morphButtons);
         settings.add(ctrlPtBar);
         settings.add(frameEntry);
         settings.add(fpsEntry);
+        settings.add(reset);
 
         settingsScreen.add(settings);
+        Dimension prefSize = new Dimension();
+        prefSize.width = settings.getPreferredSize().width;
+        prefSize.height = 200;
+        settingsScreen.setPreferredSize(prefSize);
         master.add(settingsScreen);
     }
 
