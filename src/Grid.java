@@ -110,7 +110,7 @@ public class Grid extends JLabel implements Serializable{
 
     public void resetGrid()
     {
-        //reset the points to their unaltered state
+        generatePoints();
     }
 
     public CtrlPoint[][] getPntList(){

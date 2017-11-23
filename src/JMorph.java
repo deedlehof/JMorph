@@ -219,7 +219,7 @@ public class JMorph extends JFrame {
                 int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to reset the control points?");
                 if(confirm == JOptionPane.YES_OPTION)
                 {
-                    //reset control points
+                    gridControl.resetGrids();
                 }
             }
         });

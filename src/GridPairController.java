@@ -52,4 +52,9 @@ public class GridPairController {
         grid1.setPntRadius(radius);
         grid2.setPntRadius(radius);
     }
+
+    public void resetGrids(){
+        grid1.resetGrid();
+        grid2.resetGrid();
+    }
 }
