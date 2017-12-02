@@ -74,6 +74,11 @@ public class GridPairController {
         grid2.setPntRadius(radius);
     }
 
+    public void drawTriangles(boolean draw){
+        grid1.drawTriangles(draw);
+        grid2.drawTriangles(draw);
+    }
+
     public void resetGrids(){
         grid1.resetGrid();
         grid2.resetGrid();

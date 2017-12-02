@@ -203,8 +203,8 @@ public class Grid extends JPanel implements Serializable{
     }
 
     public void setGridResolution(int _width, int _height){
-        this.width = _width;
-        this.height = _height;
+        this.width = _width + 2;
+        this.height = _height + 2;
 
         generatePoints();
         generateTriangles();
@@ -222,6 +222,11 @@ public class Grid extends JPanel implements Serializable{
                 pntList[x][y].setRadius(radius);
             }
         }
+        repaint();
+    }
+
+    public void drawTriangles(boolean draw){
+        this.drawTriangles = draw;
         repaint();
     }
 

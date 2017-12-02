@@ -10,18 +10,18 @@ import java.io.File;
 public class JMorph extends JFrame {
     private Container cont;
     private Grid leftGrid, rightGrid;
-    private JPanel master, settings, settingsScreen, morphButtons, ctrlPtBar, frameEntry, setPictures, fpsEntry; //contains slider bar and buttons
+    private JPanel master, settings, settingsScreen, morphButtons, ctrlPtBar, setPictures; //contains slider bar and buttons
     private JButton morph, leftImg, rightImg, preview, reset;
     private JSlider ctrlPts;
     private JMenuBar menu; //contain exit, restart, settings, etc.?
     private GridBagLayout layout;
     private JPanel screen, rightGridScrn, leftGridScrn;
-    private JTextArea inputDuration, inputFPS;
-    private JLabel durationDesc, ptsDesc, fpsDesc;
+    private JLabel ptsDesc;
     private GridBagConstraints leftGridConst, rightGridConst;
     public final static double MAX_DIMENSION = 400; //current max allowable size for the grid
 
     private GridPairController gridControl;
+    private OptionFrame options;
 
     public JMorph(){
         super("Morpher");
@@ -39,16 +39,57 @@ public class JMorph extends JFrame {
 
         gridControl = new GridPairController(leftGrid, rightGrid);
 
+        ActionListener applySettingsListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                applySettings(options);
+            }
+        };
+        options = new OptionFrame(applySettingsListener);
+
         pack();
         Dimension frameSize = master.getPreferredSize();
         setSize(frameSize.width + 50, frameSize.height + 100);
         setVisible(true);
     }
 
+    private void applySettings(OptionFrame settings){
+        int gWidth = settings.getGridWidth();
+        int gHeight = settings.getGridHeight();
+        gridControl.setGridResolution(gWidth, gHeight);
+        gridControl.drawTriangles(settings.drawTriangles());
+    }
+
+    private void resetGrids(){
+        int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to reset the control points?");
+        if(confirm == JOptionPane.YES_OPTION) {
+            gridControl.resetGrids();
+        }
+    }
+
     private void setupMenuBar()
     {
         menu = new JMenuBar();
         JMenu file = new JMenu("File");
+
+        JMenuItem resetMenu = new JMenuItem("Reset Grids");
+        resetMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                resetGrids();
+            }
+        });
+        file.add(resetMenu);
+
+        JMenuItem settingMenu = new JMenuItem("Settings");
+        settingMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                options.setVisible(true);
+            }
+        });
+        file.add(settingMenu);
+
         JMenuItem exit = new JMenuItem("Exit");
         exit.addActionListener(new ActionListener() {
             @Override
@@ -103,18 +144,6 @@ public class JMorph extends JFrame {
         cont.add(master, BorderLayout.CENTER);
     }
 
-    private boolean isInteger(String str) {
-        int size = str.length();
-
-        for (int i = 0; i < size; i++) {
-            if (!Character.isDigit(str.charAt(i))) {
-                return false;
-            }
-        }
-
-        return size > 0;
-    }
-
     private void setupSettingsPanel()
     {
         settings = new JPanel();
@@ -137,35 +166,14 @@ public class JMorph extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 /*Start morph preview*/
-                int fps = 30;
-                if(isInteger(inputFPS.getText()))
-                    fps = Integer.parseInt(inputFPS.getText());
-
-                int duration = 2;
-                if(isInteger(inputDuration.getText()))
-                    duration = Integer.parseInt(inputDuration.getText());
+                int duration = options.getSeconds();
+                int fps = options.getFPS();
 
                 TransitionFrame morphFrame = new TransitionFrame(leftGrid, rightGrid, duration, fps);
             }
         });
         morphButtons.add(morph);
         morphButtons.add(preview);
-
-        frameEntry = new JPanel();
-        frameEntry.setLayout(new BoxLayout(frameEntry, BoxLayout.X_AXIS));
-        durationDesc = new JLabel("Enter the number of seconds:");
-        inputDuration = new JTextArea("2");
-        inputDuration.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        frameEntry.add(durationDesc);
-        frameEntry.add(inputDuration);
-
-        fpsEntry = new JPanel();
-        fpsEntry.setLayout(new BoxLayout(fpsEntry, BoxLayout.X_AXIS));
-        fpsDesc = new JLabel("Enter the number of frames per second: ");
-        inputFPS = new JTextArea("30");
-        inputFPS.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        fpsEntry.add(fpsDesc);
-        fpsEntry.add(inputFPS);
 
         ctrlPtBar = new JPanel();
         ctrlPtBar.setLayout(new BoxLayout(ctrlPtBar, BoxLayout.X_AXIS));
@@ -213,19 +221,6 @@ public class JMorph extends JFrame {
         setPictures.add(leftImg);
         setPictures.add(rightImg);
 
-        reset = new JButton("Reset Morph");
-        reset.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //popup confirming reset choice
-                int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to reset the control points?");
-                if(confirm == JOptionPane.YES_OPTION)
-                {
-                    gridControl.resetGrids();
-                }
-            }
-        });
-
         JPanel editImage = new JPanel();
         editImage.setLayout(new BoxLayout(editImage, BoxLayout.X_AXIS));
         JButton editLeft = new JButton("Edit Left");
@@ -250,9 +245,6 @@ public class JMorph extends JFrame {
         settings.add(setPictures);
         settings.add(morphButtons);
         settings.add(ctrlPtBar);
-        settings.add(frameEntry);
-        settings.add(fpsEntry);
-        settings.add(reset);
         settings.add(editImage);
 
         settingsScreen.add(settings);
