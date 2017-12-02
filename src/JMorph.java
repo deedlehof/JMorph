@@ -127,7 +127,7 @@ public class JMorph extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //check input duration to see how many frames to render
-                leftGrid.resetGrid(); //TODO: implement this method
+                leftGrid.resetGrid();
                 rightGrid.resetGrid();
             }
         });
@@ -192,7 +192,8 @@ public class JMorph extends JFrame {
                 File path = getPath();
                 if(path != null)
                 {
-                    setImage(leftGrid, path.getAbsolutePath());
+                    BufferedImage leftImg = getBufferedImage(leftGrid, path.getAbsolutePath());
+                    gridControl.setImage1(leftImg);
                 }
             }
         });
@@ -204,7 +205,8 @@ public class JMorph extends JFrame {
                 /*Popup file selector, get data from it*/
                 File path = getPath();
                 if(path != null) {
-                    setImage(rightGrid, path.getAbsolutePath());
+                    BufferedImage rightImg = getBufferedImage(rightGrid, path.getAbsolutePath());
+                    gridControl.setImage2(rightImg);
                 }
             }
         });
@@ -224,12 +226,34 @@ public class JMorph extends JFrame {
             }
         });
 
+        JPanel editImage = new JPanel();
+        editImage.setLayout(new BoxLayout(editImage, BoxLayout.X_AXIS));
+        JButton editLeft = new JButton("Edit Left");
+        editLeft.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                gridControl.editImage1();
+            }
+        });
+        JButton editRight = new JButton("Edit Right");
+        editRight.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                gridControl.editImage2();
+            }
+        });
+
+        editImage.add(editLeft);
+        editImage.add(editRight);
+
+
         settings.add(setPictures);
         settings.add(morphButtons);
         settings.add(ctrlPtBar);
         settings.add(frameEntry);
         settings.add(fpsEntry);
         settings.add(reset);
+        settings.add(editImage);
 
         settingsScreen.add(settings);
         Dimension prefSize = new Dimension();
@@ -249,7 +273,7 @@ public class JMorph extends JFrame {
     }
 
     //Set the image in a particular grid
-    public void setImage(Grid g, String path)
+    public BufferedImage getBufferedImage(Grid g, String path)
     {
         Image img = new ImageIcon(path).getImage();
         Dimension scaled = scaleImg(img, g);
@@ -264,8 +288,8 @@ public class JMorph extends JFrame {
         BufferedImage buf = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_RGB);
         Graphics2D bg = buf.createGraphics();
         bg.drawImage(img, g.getX(), g.getY(), null);
-        g.setImg(buf);
         bg.dispose();
+        return buf;
     }
 
     //scale but maintain aspect ratio

@@ -307,6 +307,10 @@ public class Grid extends JPanel implements Serializable{
         this.repaint();
     }
 
+    public BufferedImage getImg() {
+        return origImg;
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
