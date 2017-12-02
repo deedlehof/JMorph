@@ -7,17 +7,18 @@ import java.awt.image.BufferedImage;
 import java.io.Serializable;
 
 //the entire class can be serialized for the two graphs
-public class Grid extends JLabel implements Serializable{
+public class Grid extends JPanel implements Serializable{
 
     private int width, height;
     private boolean isDragging = false;
     private CtrlPoint dragPoint = null;
+    private CtrlTriangle[] dragTriangles;
 
     private final Color baseColor = Color.black;
     private final Color activeColor = Color.red;
 
     private CtrlPoint[][] pntList;
-    private CtrlTriangle[] triangleList;
+    private CtrlTriangle[][] triangleList;
 
     private boolean drawTriangles = true;
     private int radius = 5;
@@ -49,6 +50,7 @@ public class Grid extends JLabel implements Serializable{
                         if(pntList[x][y].contains(clickPnt)){
                             isDragging = true;
                             dragPoint = pntList[x][y];
+                            dragTriangles = getPntTriangleNeighbors(dragPoint);
                             dragPoint.setStatus(true);
                             repaint();
                             return;
@@ -74,6 +76,7 @@ public class Grid extends JLabel implements Serializable{
                         if(currPnt.y < 0) { currPnt.y = 0; }
                         if(currPnt.x > getWidth()) { currPnt.x = getWidth(); }
                         if(currPnt.y > getHeight()) { currPnt.y = getHeight(); }
+                        if(!(pointInTriangles(dragTriangles, currPnt))) { return; }
                         dragPoint.setLocation(currPnt);
                         repaint();
                     }
@@ -130,30 +133,50 @@ public class Grid extends JLabel implements Serializable{
     }
 
     private void generateTriangles(){
-        triangleList = new CtrlTriangle[((width-1)*(height-1))*2];
+        triangleList = new CtrlTriangle[(width-1)*2][height-1];
 
-        int placeCount = 0;
         for(int y  = 0; y < height-1; y++){
             for(int x = 0; x < width-1; x++){
-                triangleList[placeCount] = new CtrlTriangle(
-                        pntList[x][y],
-                        pntList[x+1][y],
-                        pntList[x+1][y+1]
-                );
-                placeCount++;
-
-                triangleList[placeCount] = new CtrlTriangle(
+                triangleList[x*2][y] = new CtrlTriangle(
                         pntList[x][y],
                         pntList[x][y+1],
                         pntList[x+1][y+1]
                 );
-                placeCount++;
+
+                triangleList[x*2+1][y] = new CtrlTriangle(
+                        pntList[x][y],
+                        pntList[x+1][y],
+                        pntList[x+1][y+1]
+                );
             }
         }
     }
 
-    public CtrlTriangle[] getTriangleList(){
+    public CtrlTriangle[][] getTriangleList(){
         return triangleList;
+    }
+
+    private CtrlTriangle[] getPntTriangleNeighbors(CtrlPoint pnt){
+        CtrlTriangle[] controlledTriangles = new CtrlTriangle[6];
+        int triangleXIndex = pnt.getGridX()*2 - 1;
+        int triangleYIndex = pnt.getGridY() - 1;
+
+        controlledTriangles[0] = triangleList[triangleXIndex-1][triangleYIndex];
+        controlledTriangles[1] = triangleList[triangleXIndex][triangleYIndex];
+        controlledTriangles[2] = triangleList[triangleXIndex+1][triangleYIndex];
+        controlledTriangles[3] = triangleList[triangleXIndex][triangleYIndex+1];
+        controlledTriangles[4] = triangleList[triangleXIndex+1][triangleYIndex+1];
+        controlledTriangles[5] = triangleList[triangleXIndex+2][triangleYIndex+1];
+
+        return controlledTriangles;
+    }
+
+    private boolean pointInTriangles(CtrlTriangle[] triangles, Point point){
+        for(int i = 0; i < triangles.length; i++){
+            if(triangles[i].contains(point)) { return true; }
+        }
+
+        return false;
     }
 
     public CtrlPoint getDragPoint() {

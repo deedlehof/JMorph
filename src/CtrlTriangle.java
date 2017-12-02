@@ -1,4 +1,6 @@
-public class CtrlTriangle {
+import java.awt.*;
+
+public class CtrlTriangle extends Polygon{
 
     public final CtrlPoint c1, c2, c3;
     public final CtrlPoint[] points;
@@ -16,5 +18,23 @@ public class CtrlTriangle {
 
     public double getY(int index){
         return points[index].getY();
+    }
+
+    //temporary contains function
+    //might rework and make CtrlTriangle a polygon
+    public boolean contains(Point pnt) {
+        Polygon triangle = new Polygon();
+        triangle.addPoint(c1.x, c1.y);
+        triangle.addPoint(c2.x, c2.y);
+        triangle.addPoint(c3.x, c3.y);
+        return triangle.contains(pnt);
+    }
+
+    public Polygon getShape(){
+        Polygon triangle = new Polygon();
+        triangle.addPoint(c1.x, c1.y);
+        triangle.addPoint(c2.x, c2.y);
+        triangle.addPoint(c3.x, c3.y);
+        return triangle;
     }
 }
