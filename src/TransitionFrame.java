@@ -6,7 +6,6 @@ import java.awt.event.ActionListener;
 public class TransitionFrame extends JFrame{
 
     private Grid grid1, grid2;
-    private Grid transitionGrid;
     private int guiHeight = 50;
     private final int addedPadding = 15;
 
@@ -19,23 +18,22 @@ public class TransitionFrame extends JFrame{
         this.seconds = duration;
         this.framesPerSecond = fps;
 
-        transitionGrid = new Grid(grid1);
-        transitionGrid.setGridImmovable(true);
+        TransitionPanel transition = new TransitionPanel(grid1);
 
         JButton doTransitionBtn = new JButton("Morph");
-        doTransitionBtn.setSize(transitionGrid.getWidth(), doTransitionBtn.getHeight());
+        doTransitionBtn.setSize(transition.getWidth(), doTransitionBtn.getHeight());
 
         doTransitionBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                transitionGrid.morphGrid(grid2, seconds, framesPerSecond);
+                transition.morph(grid2, seconds, framesPerSecond);
             }
         });
 
-        add(transitionGrid, BorderLayout.CENTER);
+        add(transition, BorderLayout.CENTER);
         add(doTransitionBtn, BorderLayout.SOUTH);
 
-        setSize(transitionGrid.getWidth() + addedPadding, transitionGrid.getHeight() + guiHeight + 25);
+        setSize(transition.getWidth() + addedPadding, transition.getHeight() + guiHeight + 25);
         setVisible(true);
     }
 }
