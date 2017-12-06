@@ -18,7 +18,7 @@ public class JMorph extends JFrame {
     private JPanel screen, rightGridScrn, leftGridScrn;
     private JLabel ptsDesc;
     private GridBagConstraints leftGridConst, rightGridConst;
-    public final static double MAX_DIMENSION = 400; //current max allowable size for the grid
+    public final static int MAX_DIMENSION = 600; //current max allowable size for the grid
 
     private GridPairController gridControl;
     private OptionFrame options;
@@ -48,6 +48,7 @@ public class JMorph extends JFrame {
         options = new OptionFrame(applySettingsListener);
 
         pack();
+        gridControl.resetGrids();
         Dimension frameSize = master.getPreferredSize();
         setSize(frameSize.width + 50, frameSize.height + 100);
         setVisible(true);
@@ -122,16 +123,16 @@ public class JMorph extends JFrame {
 
         leftGridConst.gridx = 0;
         leftGridConst.gridy = 0;
-        leftGridConst.ipadx = leftGrid.getWidth(); //sets the "size" of the grid or how much space it can take up--need to customize based on number of ctrl pts
-        leftGridConst.ipady = leftGrid.getHeight();
+        leftGridConst.ipadx = MAX_DIMENSION; //sets the "size" of the grid or how much space it can take up--need to customize based on number of ctrl pts
+        leftGridConst.ipady = MAX_DIMENSION;
         leftGridConst.fill = GridBagConstraints.BOTH;
         leftGridScrn.add(leftGrid, leftGridConst);
 
         rightGridScrn.setLayout(layout);
         rightGridConst.gridx = 2;
         rightGridConst.gridy = 0;
-        rightGridConst.ipadx = rightGrid.getWidth();
-        rightGridConst.ipady = rightGrid.getHeight();
+        rightGridConst.ipadx = MAX_DIMENSION;
+        rightGridConst.ipady = MAX_DIMENSION;
         rightGridConst.fill = GridBagConstraints.BOTH;
         rightGridScrn.add(rightGrid, rightGridConst);
 

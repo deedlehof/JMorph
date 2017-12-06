@@ -20,8 +20,6 @@ public class CtrlTriangle extends Polygon{
         return points[index].getY();
     }
 
-    //temporary contains function
-    //might rework and make CtrlTriangle a polygon
     public boolean contains(Point pnt) {
         Polygon triangle = new Polygon();
         triangle.addPoint(c1.x, c1.y);

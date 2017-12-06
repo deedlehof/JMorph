@@ -16,12 +16,14 @@ public class Grid extends JPanel implements Serializable{
     private CtrlPoint clickedPoint = null;
     private CtrlPoint[] highlightedPoints = null;
     private CtrlTriangle[][] dragTriangles = null;
+    private CtrlTriangle[] errorTriangles = null;
     private boolean isHighlighting = false;
     private Point selectCorner1, selectCorner2;
     private Polygon highlightPoly = null;
 
     private final Color baseColor = Color.black;
     private final Color activeColor = Color.red;
+    private final Color errorColor = new Color(255, 255, 150, 150);
 
     private CtrlPoint[][] pntList;
     private CtrlTriangle[][] triangleList;
@@ -46,7 +48,7 @@ public class Grid extends JPanel implements Serializable{
                 super.mousePressed(e);
 
                 Point clickPnt = e.getPoint();
-
+                selectCorner1 = e.getPoint();
 
                 //reset if not a highlighted point else just move
                 for(int y = 1; y < height-1; y++) {
@@ -70,7 +72,6 @@ public class Grid extends JPanel implements Serializable{
                 }
 
                 isHighlighting = true;
-                selectCorner1 = e.getPoint();
 
             }
 
@@ -80,15 +81,20 @@ public class Grid extends JPanel implements Serializable{
 
                 //if highlighting then get all covered points
                 if(isHighlighting) {
-                    isHighlighting = false;
+                    selectCorner2 = e.getPoint();
                     resetDragPoints();
+                    genHighlightPoly();
                     highlightedPoints = getHighlightedPoints();
+
+                    if(highlightedPoints == null) return;
+
                     dragTriangles = new CtrlTriangle[highlightedPoints.length][];
                     for(int i = 0; i < highlightedPoints.length; i++){
                         highlightedPoints[i].setStatus(true);
                         dragTriangles[i] = getPntTriangleNeighbors(highlightedPoints[i]);
                     }
                     repaint();
+                    isHighlighting = false;
                 }
             }
         });
@@ -114,6 +120,8 @@ public class Grid extends JPanel implements Serializable{
                         int checkY = (int)(highlightedPoints[i].y + offSetY);
 
                         if (!(pointInTriangles(dragTriangles[i], new Point(checkX, checkY)))) {
+                            errorTriangles = dragTriangles[i];
+                            repaint();
                             return;
                         }
 
@@ -133,6 +141,9 @@ public class Grid extends JPanel implements Serializable{
                         destPoints[i] = new Point(checkX, checkY);
                     }
 
+                    if(errorTriangles != null)
+                        errorTriangles = null;
+
                     for(int i = 0; i < highlightedPoints.length; i++){
                         highlightedPoints[i].setLocation(destPoints[i]);
                     }
@@ -141,6 +152,7 @@ public class Grid extends JPanel implements Serializable{
                 }
                 if(isHighlighting){
                     selectCorner2 = e.getPoint();
+                    genHighlightPoly();
                     repaint();
                 }
             }
@@ -156,6 +168,10 @@ public class Grid extends JPanel implements Serializable{
         for(int i = 0; i < highlightedPoints.length; i++){
             highlightedPoints[i].setStatus(false);
         }
+
+        highlightedPoints = null;
+
+        repaint();
     }
 
     private boolean pntInList(CtrlPoint[] points, CtrlPoint findPnt){
@@ -169,7 +185,7 @@ public class Grid extends JPanel implements Serializable{
     }
 
     private CtrlPoint[] getHighlightedPoints(){
-        if(highlightPoly == null) return null;
+        genHighlightPoly();
 
         ArrayList<CtrlPoint> highlightedPoints = new ArrayList<>();
 
@@ -183,6 +199,13 @@ public class Grid extends JPanel implements Serializable{
         }
 
         return highlightedPoints.toArray(new CtrlPoint[highlightedPoints.size()]);
+    }
+
+    private void genHighlightPoly(){
+        Point corner3 = new Point(selectCorner2.x, selectCorner1.y);
+        Point corner4 = new Point(selectCorner1.x, selectCorner2.y);
+        Point[] highlightCorners = {selectCorner1, corner3, selectCorner2, corner4};
+        highlightPoly = polygonize(highlightCorners);
     }
 
     private void generatePoints(){
@@ -357,12 +380,14 @@ public class Grid extends JPanel implements Serializable{
         }
         */
 
-        if(isHighlighting){
-            Point corner3 = new Point(selectCorner2.x, selectCorner1.y);
-            Point corner4 = new Point(selectCorner1.x, selectCorner2.y);
-            Point[] highlightCorners = {selectCorner1, corner3, selectCorner2, corner4};
-            highlightPoly = polygonize(highlightCorners);
+        if(errorTriangles != null){
+            g.setColor(errorColor);
+            for(int t = 0; t < errorTriangles.length; t++){
+                g.fillPolygon(errorTriangles[t].getShape());
+            }
+        }
 
+        if(isHighlighting && highlightPoly != null){
             g.setColor(Color.cyan);
             g.fillPolygon(highlightPoly);
             g.setColor(Color.blue);
@@ -394,6 +419,8 @@ public class Grid extends JPanel implements Serializable{
                     g.setColor(baseColor);
                 }
                 g.fillOval((int)currPnt.getX() - radius, (int)currPnt.getY() - radius, radius*2, radius*2);
+                g.setColor(Color.white);
+                g.drawOval((int)currPnt.getX() - radius, (int)currPnt.getY() - radius, radius*2, radius*2);
             }
         }
     }

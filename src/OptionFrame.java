@@ -107,7 +107,7 @@ public class OptionFrame extends JFrame {
         framesField = new JTextField(Integer.toString(frames));
 
         morphConstraints.fill = GridBagConstraints.BOTH;
-        morphConstraints.weighty = .2;
+        morphConstraints.weighty = .1;
 
         morphConstraints.gridx = 0;
         morphConstraints.gridy = 0;

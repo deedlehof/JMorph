@@ -18,7 +18,6 @@ public class GridPairController {
         grid1.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                super.mousePressed(e);
                 activePnts1 = grid1.getDragPoints();
                 if(activePnts1 != null) {
                     for (CtrlPoint point: activePnts1) {
@@ -28,7 +27,6 @@ public class GridPairController {
             }
 
             public void mouseReleased(MouseEvent e){
-                super.mouseReleased(e);
                 if(activePnts1 != null) {
                     for (CtrlPoint point: activePnts1) {
                         grid2.changeActivePoint(point.getGridX(), point.getGridY(), false);
@@ -40,7 +38,6 @@ public class GridPairController {
         grid2.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                super.mousePressed(e);
                 activePnts2 = grid2.getDragPoints();
                 if(activePnts2 != null) {
                     for (CtrlPoint point: activePnts2) {
@@ -50,7 +47,6 @@ public class GridPairController {
             }
 
             public void mouseReleased(MouseEvent e){
-                super.mouseReleased(e);
                 if(activePnts2 != null) {
                     for (CtrlPoint point: activePnts2) {
                         grid1.changeActivePoint(point.getGridX(), point.getGridY(), false);

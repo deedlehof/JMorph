@@ -17,6 +17,7 @@ public class TransitionPanel extends JPanel {
     private CtrlTriangle[][] triangleList;
 
     private BufferedImage currImage = null;
+    private BufferedImage destImage = null;
 
     private Grid originalGrid = null;
 
@@ -101,10 +102,12 @@ public class TransitionPanel extends JPanel {
             this.repaint();
 
             try {
-                Thread.sleep(sleepTime);
+                Thread.sleep(sleepTime); //TODO return to sleeptime
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
+
         }
 
     }
