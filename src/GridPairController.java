@@ -7,26 +7,33 @@ import java.awt.image.BufferedImage;
 public class GridPairController {
 
     private Grid grid1, grid2;
-    private CtrlPoint activePnt1, activePnt2;
+    private CtrlPoint activePnts1[], activePnts2[];
     private ImageEditFrame imageEditor1, imageEditor2;
 
     public GridPairController(Grid _grid1, Grid _grid2){
         this.grid1 = _grid1;
         this.grid2 = _grid2;
 
+
         grid1.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
-                activePnt1 = grid1.getDragPoint();
-                if(activePnt1 != null)
-                    grid2.changeActivePoint(activePnt1.getGridX(), activePnt1.getGridY(), true);
+                activePnts1 = grid1.getDragPoints();
+                if(activePnts1 != null) {
+                    for (CtrlPoint point: activePnts1) {
+                        grid2.changeActivePoint(point.getGridX(), point.getGridY(), true);
+                    }
+                }
             }
 
             public void mouseReleased(MouseEvent e){
                 super.mouseReleased(e);
-                if(activePnt1 != null)
-                    grid2.changeActivePoint(activePnt1.getGridX(), activePnt1.getGridY(), false);
+                if(activePnts1 != null) {
+                    for (CtrlPoint point: activePnts1) {
+                        grid2.changeActivePoint(point.getGridX(), point.getGridY(), false);
+                    }
+                }
             }
         });
 
@@ -34,17 +41,24 @@ public class GridPairController {
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
-                activePnt2 = grid2.getDragPoint();
-                if(activePnt2 != null)
-                    grid1.changeActivePoint(activePnt2.getGridX(), activePnt2.getGridY(), true);
+                activePnts2 = grid2.getDragPoints();
+                if(activePnts2 != null) {
+                    for (CtrlPoint point: activePnts2) {
+                        grid1.changeActivePoint(point.getGridX(), point.getGridY(), true);
+                    }
+                }
             }
 
             public void mouseReleased(MouseEvent e){
                 super.mouseReleased(e);
-                if(activePnt2 != null)
-                    grid1.changeActivePoint(activePnt2.getGridX(), activePnt2.getGridY(), false);
+                if(activePnts2 != null) {
+                    for (CtrlPoint point: activePnts2) {
+                        grid1.changeActivePoint(point.getGridX(), point.getGridY(), false);
+                    }
+                }
             }
         });
+
 
         ActionListener confirmGrid1Edit = new ActionListener() {
             @Override

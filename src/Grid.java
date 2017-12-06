@@ -5,14 +5,20 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
+import java.util.ArrayList;
 
 //the entire class can be serialized for the two graphs
 public class Grid extends JPanel implements Serializable{
 
     private int width, height;
+
     private boolean isDragging = false;
-    private CtrlPoint dragPoint = null;
-    private CtrlTriangle[] dragTriangles;
+    private CtrlPoint clickedPoint = null;
+    private CtrlPoint[] highlightedPoints = null;
+    private CtrlTriangle[][] dragTriangles = null;
+    private boolean isHighlighting = false;
+    private Point selectCorner1, selectCorner2;
+    private Polygon highlightPoly = null;
 
     private final Color baseColor = Color.black;
     private final Color activeColor = Color.red;
@@ -39,28 +45,51 @@ public class Grid extends JPanel implements Serializable{
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
 
-                if(dragPoint != null) {
-                    dragPoint.setStatus(false);
-                }
-
                 Point clickPnt = e.getPoint();
-                for(int y = 0; y < height; y++) {
-                    for (int x = 0; x < width; x++) {
+
+
+                //reset if not a highlighted point else just move
+                for(int y = 1; y < height-1; y++) {
+                    for (int x = 1; x < width-1; x++) {
                         if(pntList[x][y].contains(clickPnt)){
                             isDragging = true;
-                            dragPoint = pntList[x][y];
-                            dragTriangles = getPntTriangleNeighbors(dragPoint);
-                            dragPoint.setStatus(true);
-                            repaint();
+                            clickedPoint = pntList[x][y];
+                            if(!pntInList(highlightedPoints, pntList[x][y])){ //do only 1 drag point
+                                resetDragPoints();
+                                highlightedPoints = new CtrlPoint[1];
+                                dragTriangles = new CtrlTriangle[1][];
+
+                                highlightedPoints[0] = pntList[x][y];
+                                dragTriangles[0] = getPntTriangleNeighbors(pntList[x][y]);
+                                pntList[x][y].setStatus(true);
+                                repaint();
+                            }
                             return;
                         }
                     }
                 }
+
+                isHighlighting = true;
+                selectCorner1 = e.getPoint();
+
             }
 
             public void mouseReleased(MouseEvent e){
                 super.mouseReleased(e);
                 isDragging = false;
+
+                //if highlighting then get all covered points
+                if(isHighlighting) {
+                    isHighlighting = false;
+                    resetDragPoints();
+                    highlightedPoints = getHighlightedPoints();
+                    dragTriangles = new CtrlTriangle[highlightedPoints.length][];
+                    for(int i = 0; i < highlightedPoints.length; i++){
+                        highlightedPoints[i].setStatus(true);
+                        dragTriangles[i] = getPntTriangleNeighbors(highlightedPoints[i]);
+                    }
+                    repaint();
+                }
             }
         });
 
@@ -68,23 +97,92 @@ public class Grid extends JPanel implements Serializable{
             @Override
             public void mouseDragged(MouseEvent e) {
                 super.mouseDragged(e);
+
+                //check that every drag is valid and then if so move
                 if(isDragging){
-                    if(dragPoint != null && dragPoint.isMoveable()){
-                        Point currPnt = e.getPoint();
-                        if(currPnt.x < 0) { currPnt.x = 0; }
-                        if(currPnt.y < 0) { currPnt.y = 0; }
-                        if(currPnt.x > getWidth()) { currPnt.x = getWidth(); }
-                        if(currPnt.y > getHeight()) { currPnt.y = getHeight(); }
-                        if(!(pointInTriangles(dragTriangles, currPnt))) { return; }
-                        dragPoint.setLocation(currPnt);
-                        repaint();
+
+                    Point currPnt = e.getPoint();
+
+                    double offSetX = currPnt.x - clickedPoint.x;
+                    double offSetY = currPnt.y - clickedPoint.y;
+
+                    Point[] destPoints = new Point[highlightedPoints.length];
+
+                    for(int i = 0; i < highlightedPoints.length; i++) {
+
+                        int checkX = (int)(highlightedPoints[i].x + offSetX);
+                        int checkY = (int)(highlightedPoints[i].y + offSetY);
+
+                        if (!(pointInTriangles(dragTriangles[i], new Point(checkX, checkY)))) {
+                            return;
+                        }
+
+                        if (checkX < 0) {
+                            return;
+                        }
+                        if (checkY < 0) {
+                            return;
+                        }
+                        if (checkX > getWidth()) {
+                            return;
+                        }
+                        if (checkY > getHeight()) {
+                            return;
+                        }
+
+                        destPoints[i] = new Point(checkX, checkY);
                     }
 
+                    for(int i = 0; i < highlightedPoints.length; i++){
+                        highlightedPoints[i].setLocation(destPoints[i]);
+                    }
+                    repaint();
+
+                }
+                if(isHighlighting){
+                    selectCorner2 = e.getPoint();
+                    repaint();
                 }
             }
         });
 
 
+    }
+
+    private void resetDragPoints(){
+        //set all of the points back to black
+        if(highlightedPoints == null) return;
+
+        for(int i = 0; i < highlightedPoints.length; i++){
+            highlightedPoints[i].setStatus(false);
+        }
+    }
+
+    private boolean pntInList(CtrlPoint[] points, CtrlPoint findPnt){
+        if(points == null || points.length == 0) return false;
+
+        for(int i = 0; i < points.length; i++){
+            if(points[i] == findPnt) return true;
+        }
+
+        return false;
+    }
+
+    private CtrlPoint[] getHighlightedPoints(){
+        if(highlightPoly == null) return null;
+
+        ArrayList<CtrlPoint> highlightedPoints = new ArrayList<>();
+
+        for(int y = 1; y < height-1; y++){
+            for(int x = 1; x < width-1; x++){
+                CtrlPoint currPnt = pntList[x][y];
+                if(highlightPoly.contains(currPnt)){
+                    highlightedPoints.add(currPnt);
+                }
+            }
+        }
+
+        return highlightedPoints.toArray(new CtrlPoint[highlightedPoints.size()]);
     }
 
     private void generatePoints(){
@@ -166,20 +264,24 @@ public class Grid extends JPanel implements Serializable{
         return false;
     }
 
-    public CtrlPoint getDragPoint() {
-        return dragPoint;
+
+    public CtrlPoint[] getDragPoints() {
+        return highlightedPoints;
     }
 
+
     public void changeActivePoint(int gridX, int gridY, boolean pntStatus){
-        if(dragPoint != null){
-            dragPoint.setStatus(false);
-            dragPoint = null;
-            isDragging = false;
+        if(highlightedPoints != null){
+            for (CtrlPoint point: highlightedPoints) {
+                point.setStatus(false);
+            }
+            highlightedPoints = null;
         }
         pntList[gridX][gridY].setStatus(pntStatus);
         if(pntStatus)
             repaint();
     }
+
 
     public void setGridResolution(int _width, int _height){
         if(width == _width+2 && height == _height+2) return;
@@ -223,6 +325,17 @@ public class Grid extends JPanel implements Serializable{
         return origImg;
     }
 
+    private Polygon polygonize(Point[] polyPoints){
+
+        Polygon tempPoly = new Polygon();
+
+        for(int  i=0; i < polyPoints.length; i++){
+            tempPoly.addPoint(polyPoints[i].x, polyPoints[i].y);
+        }
+
+        return tempPoly;
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -232,6 +345,31 @@ public class Grid extends JPanel implements Serializable{
             bg.drawImage(origImg, getX(), getY(), null);
         }
 
+        /*
+        //draws the triangles bounding the drag
+        if(dragTriangles != null){
+            g.setColor(Color.green);
+            for (int p = 0; p < dragTriangles.length; p++){
+                for(int t = 0; t < dragTriangles[p].length; t++){
+                    g.fillPolygon(dragTriangles[p][t].getShape());
+                }
+            }
+        }
+        */
+
+        if(isHighlighting){
+            Point corner3 = new Point(selectCorner2.x, selectCorner1.y);
+            Point corner4 = new Point(selectCorner1.x, selectCorner2.y);
+            Point[] highlightCorners = {selectCorner1, corner3, selectCorner2, corner4};
+            highlightPoly = polygonize(highlightCorners);
+
+            g.setColor(Color.cyan);
+            g.fillPolygon(highlightPoly);
+            g.setColor(Color.blue);
+            g.drawPolygon(highlightPoly);
+        }
+
+        g.setColor(Color.black);
         if(drawTriangles){
             for(int y = 0; y < height-1; y++){
                 for(int x = 0; x < width-1; x++){
