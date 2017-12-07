@@ -1,4 +1,7 @@
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
@@ -25,6 +28,7 @@ public class JMorph extends JFrame {
 
     public JMorph(){
         super("Morpher");
+
         cont = getContentPane();
         master = new JPanel(); //holds everything
         screen = new JPanel(); //will hold the grids
@@ -121,9 +125,11 @@ public class JMorph extends JFrame {
         leftGrid = new Grid(10, 10);
         rightGrid = new Grid(10, 10);
 
+        //leftGrid.setBorder(new BevelBorder(BevelBorder.LOWERED));
+
         leftGridConst.gridx = 0;
         leftGridConst.gridy = 0;
-        leftGridConst.ipadx = MAX_DIMENSION; //sets the "size" of the grid or how much space it can take up--need to customize based on number of ctrl pts
+        leftGridConst.ipadx = MAX_DIMENSION;
         leftGridConst.ipady = MAX_DIMENSION;
         leftGridConst.fill = GridBagConstraints.BOTH;
         leftGridScrn.add(leftGrid, leftGridConst);

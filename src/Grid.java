@@ -161,12 +161,13 @@ public class Grid extends JPanel implements Serializable{
 
     }
 
-    private void resetDragPoints(){
+    public void resetDragPoints(){
         //set all of the points back to black
-        if(highlightedPoints == null) return;
 
-        for(int i = 0; i < highlightedPoints.length; i++){
-            highlightedPoints[i].setStatus(false);
+        for(int y = 1; y < height-1; y++){
+            for(int x = 1; x < width-1; x++){
+                pntList[x][y].setStatus(false);
+            }
         }
 
         highlightedPoints = null;

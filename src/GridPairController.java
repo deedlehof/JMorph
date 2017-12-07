@@ -1,3 +1,4 @@
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -18,6 +19,8 @@ public class GridPairController {
         grid1.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                grid2.resetDragPoints();
+
                 activePnts1 = grid1.getDragPoints();
                 if(activePnts1 != null) {
                     for (CtrlPoint point: activePnts1) {
@@ -27,9 +30,12 @@ public class GridPairController {
             }
 
             public void mouseReleased(MouseEvent e){
+                grid2.resetDragPoints();
+
+                activePnts1 = grid1.getDragPoints();
                 if(activePnts1 != null) {
                     for (CtrlPoint point: activePnts1) {
-                        grid2.changeActivePoint(point.getGridX(), point.getGridY(), false);
+                        grid2.changeActivePoint(point.getGridX(), point.getGridY(), true);
                     }
                 }
             }
@@ -38,6 +44,8 @@ public class GridPairController {
         grid2.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                grid1.resetDragPoints();
+
                 activePnts2 = grid2.getDragPoints();
                 if(activePnts2 != null) {
                     for (CtrlPoint point: activePnts2) {
@@ -47,9 +55,12 @@ public class GridPairController {
             }
 
             public void mouseReleased(MouseEvent e){
+                grid1.resetDragPoints();
+
+                activePnts2 = grid2.getDragPoints();
                 if(activePnts2 != null) {
                     for (CtrlPoint point: activePnts2) {
-                        grid1.changeActivePoint(point.getGridX(), point.getGridY(), false);
+                        grid1.changeActivePoint(point.getGridX(), point.getGridY(), true);
                     }
                 }
             }
@@ -73,6 +84,7 @@ public class GridPairController {
         this.imageEditor1 = new ImageEditFrame(grid1.getImg(), confirmGrid1Edit);
         this.imageEditor2 = new ImageEditFrame(grid2.getImg(), confirmGrid2Edit);
     }
+
 
     public void setGridResolution(int width, int height){
         grid1.setGridResolution(width, height);
