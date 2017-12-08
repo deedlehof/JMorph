@@ -161,6 +161,15 @@ public class Grid extends JPanel implements Serializable{
 
     }
 
+    public void copyGrid(Grid grid){
+        this.width = grid.getGridWidth();
+        this.height = grid.getGridHeight();
+        this.pntList = grid.getCopyPntList();
+        this.origImg = grid.getImg();
+        this.generateTriangles();
+        repaint();
+    }
+
     public void resetDragPoints(){
         //set all of the points back to black
 

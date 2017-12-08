@@ -4,17 +4,18 @@ import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.io.*;
 
 public class JMorph extends JFrame {
     private Container cont;
     private Grid leftGrid, rightGrid;
     private JPanel master, settings, settingsScreen, morphButtons, ctrlPtBar, setPictures; //contains slider bar and buttons
-    private JButton morph, leftImg, rightImg, preview, reset;
+    private JButton morph, leftImg, rightImg, preview;
     private JSlider ctrlPts;
     private JMenuBar menu; //contain exit, restart, settings, etc.?
     private GridBagLayout layout;
@@ -22,6 +23,8 @@ public class JMorph extends JFrame {
     private JLabel ptsDesc;
     private GridBagConstraints leftGridConst, rightGridConst;
     public final static int MAX_DIMENSION = 600; //current max allowable size for the grid
+
+    private String saveFileName = null;
 
     private GridPairController gridControl;
     private OptionFrame options;
@@ -77,6 +80,60 @@ public class JMorph extends JFrame {
         menu = new JMenuBar();
         JMenu file = new JMenu("File");
 
+        JMenuItem saveMenu = new JMenuItem("Save");
+        saveMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(saveFileName == null){
+                    File path = getApprovedPath(new String[]{"grid"});
+                    if (path != null){
+                        String absolutePath = path.getAbsolutePath();
+                        saveFileName = correctFileExtension(absolutePath, "grid");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Invalid file. Grid did not save.");
+                        return;
+                    }
+                }
+
+                saveGrids(saveFileName);
+
+            }
+        });
+        file.add(saveMenu);
+
+        JMenuItem saveAsMenu = new JMenuItem("Save As");
+        saveAsMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                File path = getApprovedPath(new String[]{"grid"});
+                if (path != null){
+                    String absolutePath = path.getAbsolutePath();
+                    saveFileName = correctFileExtension(absolutePath, "grid");
+                } else {
+                    JOptionPane.showMessageDialog(null, "Invalid file!");
+                    return;
+                }
+                saveGrids(saveFileName);
+            }
+        });
+        file.add(saveAsMenu);
+
+        JMenuItem loadMenu = new JMenuItem("Load");
+        loadMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                File path = getApprovedPath(new String[]{"grid"});
+                if (path != null){
+                    saveFileName = path.getAbsolutePath();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Invalid file!");
+                    return;
+                }
+                loadGrids(saveFileName);
+            }
+        });
+        file.add(loadMenu);
+
         JMenuItem resetMenu = new JMenuItem("Reset Grids");
         resetMenu.addActionListener(new ActionListener() {
             @Override
@@ -103,12 +160,7 @@ public class JMorph extends JFrame {
             }
         });
         file.add(exit);
-        /*
-        * Other options:
-        * save morph
-        * load
-        * ...?
-        * */
+
         menu.add(file);
 
         this.setJMenuBar(menu);
@@ -266,9 +318,33 @@ public class JMorph extends JFrame {
     private File getPath()
     {
         JFileChooser jfc = new JFileChooser();
+        //jfc.setCurrentDirectory(new File(System.getProperty("user.home") + System.getProperty("file.separator")+ "Pictures"));
         jfc.showDialog(null, "Select a file");
         jfc.setVisible(true);
         return jfc.getSelectedFile();
+    }
+
+    private File getApprovedPath(String[] extensions){
+        JFileChooser jfc = new JFileChooser();
+        jfc.setFileFilter(new FileNameExtensionFilter(extensions[0], extensions));
+        jfc.showDialog(null, "Select");
+        jfc.setVisible(true);
+
+        return jfc.getSelectedFile();
+    }
+    
+    private String correctFileExtension(String filePath, String extension){
+        if(filePath.contains(".")) { //the user added their own extension
+            String[] absPathParts = filePath.split("\\.");
+
+            filePath = "";
+            for(int i = 0; i < absPathParts.length-1; i++)
+                filePath += absPathParts[i];
+            filePath += ("." + extension);
+        } else { // no extension so add it
+            filePath += ("." + extension);
+        }
+        return filePath;
     }
 
     //Set the image in a particular grid
@@ -300,6 +376,34 @@ public class JMorph extends JFrame {
         double scale = Math.min(widthScale, heightScale);
         d = new Dimension((int)(i.getWidth(null) * scale), (int)(i.getHeight(null) * scale));
         return d;
+    }
+
+    private void saveGrids(String filename){
+
+        Grid[] saveGrids = {leftGrid, rightGrid};
+        try{
+            FileOutputStream fileOut = new FileOutputStream(filename);
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(saveGrids);
+            out.close();
+        } catch (IOException ex){
+            System.out.println(ex.getMessage());
+        }
+    }
+
+    private void loadGrids(String filename){
+
+        try{
+            FileInputStream fileIn = new FileInputStream(filename);
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            Grid[] savedGrids = (Grid[])in.readObject();
+
+            leftGrid.copyGrid(savedGrids[0]);
+            rightGrid.copyGrid(savedGrids[1]);
+
+        } catch (Exception e){
+            System.out.println(e.getMessage());
+        }
     }
 
     public static void main(String args[]){
