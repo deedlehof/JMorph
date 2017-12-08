@@ -14,23 +14,37 @@ public class TransitionPanel extends JPanel {
     private int gridWidth, gridHeight;
 
     private CtrlPoint[][] pntList;
+    private CtrlPoint[][] destPntList;
     private CtrlTriangle[][] triangleList;
+    private CtrlTriangle[][] destTriangleList;
 
     private BufferedImage currImage = null;
     private BufferedImage destImage = null;
+    private BufferedImage morphedImage = null; //holds the morphed image so neither current or dest is overwritten
 
     private Grid originalGrid = null;
+    private Grid destGrid = null;
 
     private Object ALIASING = RenderingHints.VALUE_ANTIALIAS_ON;
     private Object INTERPOLATION = RenderingHints.VALUE_INTERPOLATION_BICUBIC;
 
-    public TransitionPanel(Grid grid){
+    boolean showMorphed; //tells paintcomponent whether to show the morphed image or not
+
+    /*
+    * Transition happens between 2 grids
+    * */
+    public TransitionPanel(Grid grid, Grid dest){
         this.originalGrid = grid;
+        this.destGrid = dest;
         this.gridWidth = grid.getGridWidth();
         this.gridHeight = grid.getGridHeight();
         this.pntList = grid.getCopyPntList();
         this.triangleList = generateTriangles(pntList);
+        this.destPntList = dest.getCopyPntList(); //get dest info
+        this.destTriangleList = generateTriangles(destPntList);
         this.currImage = grid.getImg();
+        this.destImage = dest.getImg();
+        this.morphedImage = new BufferedImage(currImage.getWidth(), currImage.getHeight(), BufferedImage.TYPE_INT_RGB);
 
         setSize(new Dimension(grid.getWidth(), grid.getHeight()));
     }
@@ -45,6 +59,7 @@ public class TransitionPanel extends JPanel {
         setSize(new Dimension(originalGrid.getWidth(), originalGrid.getHeight()));
     }
 
+    //takes in grid2 in this method
     public void morph(Grid grid, int seconds, int frames){
         if(currImage == null || grid.getImg() == null) {
             JOptionPane.showMessageDialog(this, "You must have an image in both the grids to do a warp.");
@@ -97,7 +112,8 @@ public class TransitionPanel extends JPanel {
 
             //warp image
             currImage = warpColors(originalGrid.getImg(), destGrid.getImg(), percent);
-            warpTriangles(triangleList, currImage); //warping doesn't work at all
+            warpTriangles(destTriangleList/*TODO: investigate, could be a problem*/, morphedImage); //use dest triangles, but apply changes to the copied image
+            showMorphed = true; //tell paintcomponent to show the morphed image
 
             this.repaint();
 
@@ -115,7 +131,10 @@ public class TransitionPanel extends JPanel {
 
     public BufferedImage warpColors(BufferedImage src, BufferedImage dest, double percent){
         BufferedImage outImage = new BufferedImage(src.getWidth(null), src.getHeight(null), BufferedImage.TYPE_INT_RGB);
-
+        /*
+        *  TODO: Fix exception thrown when size and aspect ratio of images don't match exactly
+        *
+        * */
         for(int y = 0; y < src.getHeight(); y++){
             for(int x = 0; x < src.getWidth(); x++){
                 Color startColor = new Color(src.getRGB(x, y));
@@ -136,7 +155,9 @@ public class TransitionPanel extends JPanel {
 
         return outImage;
     }
-    
+    /*
+    * Warping is weird
+    * */
     private void warpTriangles(CtrlTriangle[][] destTriangles, BufferedImage destImage){
         for(int y = 0; y < gridHeight-1; y++){
             for(int x = 0; x < (gridWidth-1)*2; x++){
@@ -146,8 +167,53 @@ public class TransitionPanel extends JPanel {
     }
 
     //based on slide set 7.  Isn't correct
+    /*
+    * TODO: need to add Gauss and solve stuff in Seales example
+    * Look at src and dest points (start image might need morphed first)
+    * Right now pts seem to be backwards
+    * */
     private void warpTriangle(CtrlTriangle S, CtrlTriangle D, BufferedImage src, BufferedImage dest){
-        AffineTransform af = new AffineTransform(S.getX(0), S.getY(0), S.getX(1), S.getY(1), S.getX(2), S.getY(2));
+        /*
+        * Get our current 3x3 matrix
+        * run through Gauss
+        * */
+
+        double[][] mat = new double[3][3]; //3x3 matrix
+        for(int i = 0; i < 3; i++)
+        {
+            mat[i][0] = S.getX(i);
+            mat[i][1] = S.getY(i);
+            mat[i][2] = 1.0;
+        }
+
+        int l[] = new int[3];
+        Gauss(3, mat, l);
+
+        double[] b = new double[3];
+        for(int i = 0; i < 3; i++)
+        {
+            b[i] = D.getX(i);
+        }
+
+        double[] x = new double[3];
+        solve(3, mat, l, b, x);
+
+        double[] by = new double[3];
+        for(int i = 0; i < 3; i++)
+        {
+            by[i] = D.getY(i);
+        }
+
+        double[] y = new double[3];
+        solve(3, mat, l, by, y);
+
+        System.out.println("Affine:\t" + x[0] + ", " + x[1] + ", " + x[2] ); //debug
+        System.out.println("\t" + y[0] + ", " + y[1] + ", " + y[2] );
+
+        //TODO: might need to change around from here
+        //TODO: apply affine transform to a copy of dest, not dest itself
+        //Apply Affine Transform to transform using the info we have (x and y arrays out of Gauss and solver, NOT src values)
+        AffineTransform af = new AffineTransform(x[0], y[0], x[1], y[1], x[2], y[2]);
 
         GeneralPath destPath = new GeneralPath(GeneralPath.WIND_EVEN_ODD);
 
@@ -186,13 +252,108 @@ public class TransitionPanel extends JPanel {
         return triangleList;
     }
 
+    /*
+    *  Apply Gaussian Elimination with scaled partial pivoting
+    *  int n: dimensions of matrix (n x n)
+    *  double[][] mat: contains the values of the n x n matrix
+    *  int[] l: use to determine order of elimination of coefficients
+    * */
+    private static void Gauss(int n, double[][] mat, int[] l)
+    {
+        double[] s = new double[n]; //scaling factor
+        int i, j = 0, k; //iterators
+        double r, rmax, smax, xmult;
+
+        for(i = 0; i < n; i++)
+        {
+            l[i] = i; //initialize values
+            smax = 0; //initialize
+            for(j = 0; j < n; j++)
+            {
+                smax = Math.max(smax, Math.abs(mat[i][j])); //get maximum scale factor along a row of the matrix
+            }
+            s[i] = smax; //update scaling factor at i with the new maximum scale factor
+        }
+
+        i = n - 1; // ?
+        for(k = 0; k < (n-1); k++)
+        {
+            j--;
+            rmax = 0;
+            for(i = k; i < n; i++) //move forward through the matrix each main loop iteration
+            {
+                r = Math.abs(mat[l[i]][k] / s[l[i]]);
+                if(r > rmax)
+                {
+                    rmax = r;
+                    j = i;
+                }
+            }
+            //swap
+            int temp = l[j];
+            l[j] = l[k];
+            l[k] = temp;
+
+            for(i = k + 1; i < n; i++)
+            {
+                xmult = mat[l[i]][k] / mat[l[k]][k];
+                mat[l[i]][k] = xmult;
+                for(j = k + 1; j < n; j++)
+                {
+                    mat[l[i]][j] = mat[l[i]][j] - xmult * mat[l[k]][j];
+                }
+            }
+        }
+    }
+
+    /*
+    * Solve for matrix of coefficients
+    * int n, double[][] mat, and int[] l were used in Gaussian first above
+    * double[] b: the product of mat and x
+    * double[] x: the 1x3 matrix of coefficients to solve for
+    * */
+    private static void solve(int n, double[][] mat, int[] l, double[] b, double[] x)
+    {
+        int i, k;
+        double sum;
+        for(k = 0; k < (n - 1); k++)
+        {
+            for(i = k + 1; i < n; i++)
+            {
+                b[l[i]] -= mat[l[i]][k] * b[l[k]];
+            }
+        }
+        x[n-1] = b[l[n-1]] / mat[l[n-1]][n-1];
+
+        for(i = n-2; i >= 0; i--)
+        {
+            sum = b[l[i]];
+            for(int j = i + 1; j < n; j++)
+            {
+                sum = sum - mat[l[i]][j] * x[j];
+            }
+            x[i] = sum / mat[l[i]][i];
+        }
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        if (currImage != null) {
-            Graphics2D bg = (Graphics2D) g;
-            bg.drawImage(currImage, getX(), getY(), null);
+        if(showMorphed)
+        {
+            System.out.println("Showing morphed image");
+            if (morphedImage != null) {
+                Graphics2D bg = (Graphics2D) g;
+                bg.drawImage(morphedImage, getX(), getY(), null);
+            }
+        }
+        else {
+            System.out.println("Showing original image");
+            if (currImage != null) {
+                Graphics2D bg = (Graphics2D) g;
+                bg.drawImage(currImage, getX(), getY(), null);
+            }
         }
     }
 }

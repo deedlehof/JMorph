@@ -18,7 +18,7 @@ public class TransitionFrame extends JFrame{
         this.seconds = duration;
         this.framesPerSecond = fps;
 
-        TransitionPanel transition = new TransitionPanel(grid1);
+        TransitionPanel transition = new TransitionPanel(grid1, grid2);
 
         JButton doTransitionBtn = new JButton("Morph");
         doTransitionBtn.setSize(transition.getWidth(), doTransitionBtn.getHeight());

@@ -34,7 +34,7 @@ public class JMorph extends JFrame {
 
         cont = getContentPane();
         master = new JPanel(); //holds everything
-        screen = new JPanel(); //will hold the grids
+        screen = new JPanel(); //holds grid panels
         rightGridScrn = new JPanel();
         leftGridScrn = new JPanel();
         settingsScreen = new JPanel(); // holds settings
