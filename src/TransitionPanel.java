@@ -166,15 +166,12 @@ public class TransitionPanel extends JPanel {
         }
     }
 
-    /*
-    * Look at src and dest points
-    * Right now pts seem to be backwards
-    * src and dest triangles are backwards when we are applying morphs that are being done to src image
-    * */
     private void warpTriangle(CtrlTriangle S, CtrlTriangle D, BufferedImage src, BufferedImage dest){
         /*
         * Get our current 3x3 matrix
         * run through Gauss
+        * solve
+        * apply Affine Transform
         * */
 
         double[][] mat = new double[3][3]; //3x3 matrix
@@ -212,7 +209,6 @@ public class TransitionPanel extends JPanel {
 
         //Apply Affine Transform to transform using the info we have (x and y arrays out of Gauss and solver)
         AffineTransform af = new AffineTransform(x[0], y[0], x[1], y[1], x[2], y[2]);
-        //TODO: seems to be going in reverse for src image?
 
         GeneralPath destPath = new GeneralPath(GeneralPath.WIND_EVEN_ODD);
 
