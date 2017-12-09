@@ -94,7 +94,6 @@ public class TransitionPanel extends JPanel {
 
         int sleepTime = 1000/framesPerSecond;
         int loopCount = seconds * framesPerSecond;
-        //TODO: src movement is reversed, dest movement is fine
         for(int i = 0; i < loopCount; i++){
             double percent = (i + 1)/(double)loopCount;
             //calculate the position of the points based on percentage done
@@ -150,6 +149,7 @@ public class TransitionPanel extends JPanel {
     }
     /*
     * Warping is weird
+    * src image works in reverse to dest image morphing; source and dest triangles need to be swapped for src image
     * */
     private void warpTriangles(CtrlTriangle[][] destTriangles, BufferedImage destImage){
         for(int y = 0; y < gridHeight-1; y++){
@@ -162,6 +162,7 @@ public class TransitionPanel extends JPanel {
     /*
     * Look at src and dest points
     * Right now pts seem to be backwards
+    * src and dest triangles are backwards when we are applying morphs that are being done to src img
     * */
     private void warpTriangle(CtrlTriangle S, CtrlTriangle D, BufferedImage src, BufferedImage dest){
         /*
@@ -173,6 +174,8 @@ public class TransitionPanel extends JPanel {
         for(int i = 0; i < 3; i++)
         {
             mat[i][0] = S.getX(i);
+             System.out.println("P" + i + "(" + S.getX(i) + ", " + S.getY(i) +
+             ")" );
             mat[i][1] = S.getY(i);
             mat[i][2] = 1.0;
         }
@@ -198,18 +201,19 @@ public class TransitionPanel extends JPanel {
         double[] y = new double[3];
         solve(3, mat, l, by, y);
 
-        //System.out.println("Affine:\t" + x[0] + ", " + x[1] + ", " + x[2] ); //debug
-        //System.out.println("\t" + y[0] + ", " + y[1] + ", " + y[2] );
+        System.out.println("Affine:\t" + x[0] + ", " + x[1] + ", " + x[2] ); //debug
+        System.out.println("\t" + y[0] + ", " + y[1] + ", " + y[2] );
 
         //Apply Affine Transform to transform using the info we have (x and y arrays out of Gauss and solver)
         AffineTransform af = new AffineTransform(x[0], y[0], x[1], y[1], x[2], y[2]);
+        //TODO: seems to be going in reverse for src image?
 
         GeneralPath destPath = new GeneralPath(GeneralPath.WIND_EVEN_ODD);
 
-        destPath.moveTo(D.getX(0), D.getY(0));
-        destPath.lineTo(D.getX(1), D.getY(1));
-        destPath.lineTo(D.getX(2), D.getY(2));
-        destPath.lineTo(D.getX(0), D.getY(0));
+        destPath.moveTo((float)D.getX(0), (float)D.getY(0));
+        destPath.lineTo((float)D.getX(1), (float)D.getY(1));
+        destPath.lineTo((float)D.getX(2), (float)D.getY(2));
+        destPath.lineTo((float)D.getX(0), (float)D.getY(0));
 
         Graphics2D g2 = dest.createGraphics();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, ALIASING);
@@ -264,7 +268,7 @@ public class TransitionPanel extends JPanel {
             s[i] = smax; //update scaling factor at i with the new maximum scale factor
         }
 
-        i = n - 1; // ?
+        i = n - 1;
         for(k = 0; k < (n-1); k++)
         {
             j--;
