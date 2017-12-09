@@ -92,6 +92,9 @@ public class TransitionPanel extends JPanel {
             }
         }
 
+        BufferedImage tempEnd = new BufferedImage(destImage.getWidth(), destImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+        warpTriangles(destTriangleList, triangleList, destImage, tempEnd);
+
         int sleepTime = 1000/framesPerSecond;
         int loopCount = seconds * framesPerSecond;
         for(int i = 0; i < loopCount; i++){
@@ -106,9 +109,12 @@ public class TransitionPanel extends JPanel {
                 }
             }
 
+
+
             //warp image
-            currImage = warpColors(originalGrid.getImg(), destGrid.getImg(), percent);
-            warpTriangles(destTriangleList, morphedImage); //use dest triangles, but apply changes to the copied image
+            currImage = warpColors(originalGrid.getImg(), tempEnd, percent);
+            warpTriangles(triangleList, destTriangleList, currImage, morphedImage); //use dest triangles, but apply changes to the copied image
+
             showMorphed = true; //tell paintcomponent to show the morphed image
 
             this.repaint();
@@ -147,14 +153,15 @@ public class TransitionPanel extends JPanel {
         }
         return outImage;
     }
+
     /*
     * Warping is weird
     * src image works in reverse to dest image morphing; source and dest triangles need to be swapped for src image
     * */
-    private void warpTriangles(CtrlTriangle[][] destTriangles, BufferedImage destImage){
+    private void warpTriangles(CtrlTriangle[][] srcTriangles, CtrlTriangle[][] destTriangles, BufferedImage curImg, BufferedImage destImg){
         for(int y = 0; y < gridHeight-1; y++){
             for(int x = 0; x < (gridWidth-1)*2; x++){
-                warpTriangle(triangleList[x][y], destTriangles[x][y], currImage, destImage);
+                warpTriangle(srcTriangles[x][y], destTriangles[x][y], curImg, destImg);
             }
         }
     }
@@ -174,8 +181,7 @@ public class TransitionPanel extends JPanel {
         for(int i = 0; i < 3; i++)
         {
             mat[i][0] = S.getX(i);
-             System.out.println("P" + i + "(" + S.getX(i) + ", " + S.getY(i) +
-             ")" );
+             //System.out.println("P" + i + "(" + S.getX(i) + ", " + S.getY(i) + ")" );
             mat[i][1] = S.getY(i);
             mat[i][2] = 1.0;
         }
@@ -201,8 +207,8 @@ public class TransitionPanel extends JPanel {
         double[] y = new double[3];
         solve(3, mat, l, by, y);
 
-        System.out.println("Affine:\t" + x[0] + ", " + x[1] + ", " + x[2] ); //debug
-        System.out.println("\t" + y[0] + ", " + y[1] + ", " + y[2] );
+        //System.out.println("Affine:\t" + x[0] + ", " + x[1] + ", " + x[2] ); //debug
+        //System.out.println("\t" + y[0] + ", " + y[1] + ", " + y[2] );
 
         //Apply Affine Transform to transform using the info we have (x and y arrays out of Gauss and solver)
         AffineTransform af = new AffineTransform(x[0], y[0], x[1], y[1], x[2], y[2]);

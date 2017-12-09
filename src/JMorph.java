@@ -420,14 +420,14 @@ public class JMorph extends JFrame {
             ObjectInputStream in = new ObjectInputStream(fileIn);
             Grid[] savedGrids = (Grid[])in.readObject();
 
-            leftGrid.copyGrid(savedGrids[0]);
-            rightGrid.copyGrid(savedGrids[1]);
+            //update the options menu for grid resolution
+            options.setGridResolution(savedGrids[0].getGridWidth()-2, savedGrids[0].getGridHeight()-2);
 
             gridControl.setImage1(savedGrids[0].getImg());
             gridControl.setImage2(savedGrids[1].getImg());
 
-            //update the options menu for grid resolution
-            options.setGridResolution(leftGrid.getGridWidth()-2, leftGrid.getGridHeight()-2);
+            leftGrid.copyGrid(savedGrids[0]);
+            rightGrid.copyGrid(savedGrids[1]);
 
             fileIn.close();
             in.close();
