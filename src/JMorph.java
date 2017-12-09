@@ -156,7 +156,12 @@ public class JMorph extends JFrame {
         exit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.exit(0);
+                int exitChecker = JOptionPane.YES_NO_OPTION;
+                int exitCheckerResult = JOptionPane.showConfirmDialog(null, "Are you sure you want to exit? Unsaved morphs will be lost.", "Exit JMorph?", exitChecker);
+                if(exitCheckerResult == JOptionPane.YES_OPTION)
+                {
+                    System.exit(0);
+                }
             }
         });
         file.add(exit);

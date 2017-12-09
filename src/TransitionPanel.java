@@ -109,8 +109,6 @@ public class TransitionPanel extends JPanel {
                 }
             }
 
-
-
             //warp image
             currImage = warpColors(originalGrid.getImg(), tempEnd, percent);
             warpTriangles(triangleList, destTriangleList, currImage, morphedImage); //use dest triangles, but apply changes to the copied image
