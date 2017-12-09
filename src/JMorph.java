@@ -4,6 +4,7 @@ import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -219,9 +220,21 @@ public class JMorph extends JFrame {
         morph.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //check input duration to see how many frames to render
-                leftGrid.resetGrid();
-                rightGrid.resetGrid();
+                File path = getDirectory();
+                if (path == null){
+                    JOptionPane.showMessageDialog(null, "Invalid directory!");
+                    return;
+                }
+
+                String absolutePath = path.getAbsolutePath();
+                System.out.println(absolutePath);
+
+                int duration = options.getSeconds();
+                int fps = options.getFPS();
+
+                TransitionFrame morphFrame = new TransitionFrame(leftGrid, rightGrid, duration, fps);
+                morphFrame.setVisible(false);
+                morphFrame.doMorphSaveImg(rightGrid, duration, fps, absolutePath);
             }
         });
 
@@ -358,7 +371,16 @@ public class JMorph extends JFrame {
 
         return jfc.getSelectedFile();
     }
-    
+
+    private File getDirectory(){
+        JFileChooser jfc = new JFileChooser();
+        jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        jfc.showDialog(null, "Select");
+        jfc.setVisible(true);
+
+        return jfc.getSelectedFile();
+    }
+
     private String correctFileExtension(String filePath, String extension){
         if(filePath.contains(".")) { //the user added their own extension
             String[] absPathParts = filePath.split("\\.");
@@ -419,7 +441,7 @@ public class JMorph extends JFrame {
     }
 
     private void loadGrids(String filename){
-
+        System.out.println(filename);
         try{
             FileInputStream fileIn = new FileInputStream(filename);
             ObjectInputStream in = new ObjectInputStream(fileIn);

@@ -12,13 +12,15 @@ public class TransitionFrame extends JFrame{
     private int seconds = 2;
     private int framesPerSecond = 30;
 
+    private TransitionPanel transition;
+
     public TransitionFrame(Grid _grid1, Grid _grid2, int duration, int fps){
         this.grid1 = _grid1;
         this.grid2 = _grid2;
         this.seconds = duration;
         this.framesPerSecond = fps;
 
-        TransitionPanel transition = new TransitionPanel(grid1, grid2);
+        transition = new TransitionPanel(grid1, grid2);
 
         JButton doTransitionBtn = new JButton("Morph");
         doTransitionBtn.setSize(transition.getWidth(), doTransitionBtn.getHeight());
@@ -35,5 +37,10 @@ public class TransitionFrame extends JFrame{
 
         setSize(transition.getWidth() + addedPadding, transition.getHeight() + guiHeight + 25);
         setVisible(true);
+    }
+
+    public void doMorphSaveImg(Grid morGrid, int seconds, int frames, String directory){
+        transition.morph(morGrid, seconds, frames, directory);
+        JOptionPane.showMessageDialog(null, "Morph complete. Saved result to " + directory);
     }
 }

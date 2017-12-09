@@ -1,8 +1,10 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
+import java.io.File;
 
 
 public class TransitionPanel extends JPanel {
@@ -66,14 +68,31 @@ public class TransitionPanel extends JPanel {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-                applyMorph(grid, seconds, frames);
+                applyMorph(grid, seconds, frames, null);
+            }
+        });
+        t.start();
+    }
+
+    //takes in grid2 in this method
+    public void morph(Grid grid, int seconds, int frames, String directory){
+        if(currImage == null || grid.getImg() == null) {
+            JOptionPane.showMessageDialog(this, "You must have an image in both the grids to do a warp.");
+            return;
+        }
+
+        resetPanel();
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                applyMorph(grid, seconds, frames, directory);
             }
         });
         t.start();
     }
 
     
-    private void applyMorph(Grid destGrid, int seconds, int framesPerSecond){
+    private void applyMorph(Grid destGrid, int seconds, int framesPerSecond, String directory){
 
         CtrlPoint[][] destPoints = destGrid.getCopyPntList();
 
@@ -115,12 +134,24 @@ public class TransitionPanel extends JPanel {
 
             showMorphed = true; //tell paintcomponent to show the morphed image
 
-            this.repaint();
+            if(directory != null){
+                try{
+                    File outputFile = new File(directory + "\\" + i + ".png");
+                    ImageIO.write(morphedImage, "png", outputFile);
+                } catch (Exception e){
+                    JOptionPane.showMessageDialog(null, e.getMessage());
+                    return;
+                }
+            } else {
 
-            try {
-                Thread.sleep(sleepTime); //TODO return to sleeptime
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                this.repaint();
+
+                try {
+                    Thread.sleep(sleepTime); //TODO return to sleeptime
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
             }
         }
     }
@@ -164,6 +195,11 @@ public class TransitionPanel extends JPanel {
         }
     }
 
+    /*
+    * Look at src and dest points
+    * Right now pts seem to be backwards
+    * src and dest triangles are backwards when we are applying morphs that are being done to src image
+    * */
     private void warpTriangle(CtrlTriangle S, CtrlTriangle D, BufferedImage src, BufferedImage dest){
         /*
         * Get our current 3x3 matrix
@@ -207,6 +243,7 @@ public class TransitionPanel extends JPanel {
 
         //Apply Affine Transform to transform using the info we have (x and y arrays out of Gauss and solver)
         AffineTransform af = new AffineTransform(x[0], y[0], x[1], y[1], x[2], y[2]);
+        //TODO: seems to be going in reverse for src image?
 
         GeneralPath destPath = new GeneralPath(GeneralPath.WIND_EVEN_ODD);
 
