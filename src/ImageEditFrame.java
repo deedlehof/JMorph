@@ -10,12 +10,13 @@ public class ImageEditFrame extends JFrame{
 
     private ImageEditor editor;
     private String[] imageOptionsList = {
+            "None",
             "Sharpen",
             "Blur",
             "Edge Detection"
     };
     private JComboBox imageOptions;
-    private JButton applyBtn, resetBtn, applyBrightBtn, confirmBtn, cancelBtn;
+    private JButton resetBtn, confirmBtn, cancelBtn;
     private JLabel brightLabel, filterLabel;
     private JSlider brightnessSlide;
     private int maxBrightness = 100;
@@ -24,26 +25,31 @@ public class ImageEditFrame extends JFrame{
         editor = new ImageEditor(_editImage);
 
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(3, 3, 1, 1));
-
+        buttonPanel.setLayout(new GridBagLayout());
+        GridBagConstraints gbcs = new GridBagConstraints();
 
         filterLabel = new JLabel("Filter Options: ");
 
         imageOptions = new JComboBox(imageOptionsList);
-
-        applyBtn = new JButton("Apply");
-        applyBtn.addActionListener(new ActionListener() {
+        imageOptions.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String chosenOption = imageOptions.getSelectedItem().toString();
-                if(chosenOption == "Sharpen"){
-                    editor.sharpenImage();
-                } else if(chosenOption == "Blur"){
-                    editor.blurImage();
-                } else if (chosenOption == "Edge Detection"){
-                    editor.edgeDetect();
+                switch (chosenOption) {
+                    case "None":
+                        editor.resetImage();
+                        break;
+                    case "Sharpen":
+                        editor.sharpenImage();
+                        break;
+                    case "Blur":
+                        editor.blurImage();
+                        break;
+                    case "Edge Detection":
+                        editor.edgeDetect();
+                        break;
                 }
-                brightnessSlide.setValue(maxBrightness/2);
+                brightnessSlide.setValue(maxBrightness / 2);
             }
         });
 
@@ -60,7 +66,6 @@ public class ImageEditFrame extends JFrame{
                 editor.changeBrightness(brightVal/(maxBrightness/2.0));
             }
         });
-        applyBrightBtn = new JButton();
 
         resetBtn = new JButton("Reset");
         resetBtn.addActionListener(new ActionListener() {
@@ -68,6 +73,7 @@ public class ImageEditFrame extends JFrame{
             public void actionPerformed(ActionEvent e) {
                 editor.resetImage();
                 brightnessSlide.setValue(maxBrightness/2);
+                imageOptions.setSelectedIndex(0);
             }
         });
 
@@ -88,20 +94,38 @@ public class ImageEditFrame extends JFrame{
             }
         });
 
-        buttonPanel.add(filterLabel);
-        buttonPanel.add(imageOptions);
-        buttonPanel.add(applyBtn);
+        gbcs.fill = GridBagConstraints.BOTH;
+        gbcs.weightx = 1;
+        gbcs.weighty = 0;
 
-        buttonPanel.add(brightLabel);
-        buttonPanel.add(brightnessSlide);
-        buttonPanel.add(applyBrightBtn);
+        gbcs.gridx = 0;
+        gbcs.gridy = 0;
+        gbcs.gridwidth = 1;
+        buttonPanel.add(filterLabel, gbcs);
+        gbcs.gridx = 1;
+        gbcs.gridwidth = 2;
+        buttonPanel.add(imageOptions, gbcs);
 
-        buttonPanel.add(cancelBtn);
-        buttonPanel.add(confirmBtn);
-        buttonPanel.add(resetBtn);
+        gbcs.gridx = 0;
+        gbcs.gridy = 1;
+        gbcs.gridwidth = 1;
+        buttonPanel.add(brightLabel, gbcs);
+        gbcs.gridx = 1;
+        gbcs.gridwidth = 2;
+        buttonPanel.add(brightnessSlide, gbcs);
 
-        add(editor, BorderLayout.NORTH);
+        gbcs.gridx = 0;
+        gbcs.gridy = 2;
+        gbcs.gridwidth = 1;
+        buttonPanel.add(cancelBtn, gbcs);
+        gbcs.gridx = 1;
+        buttonPanel.add(confirmBtn, gbcs);
+        gbcs.gridx = 2;
+        buttonPanel.add(resetBtn, gbcs);
+
+        add(editor, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
+        pack();
         setVisible(false);
     }
 
@@ -112,5 +136,6 @@ public class ImageEditFrame extends JFrame{
     public void setImage(BufferedImage img){
         editor.setImage(img);
         pack();
+        setSize(new Dimension(img.getWidth(), getHeight()));
     }
 }

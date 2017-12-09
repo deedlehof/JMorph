@@ -1,3 +1,5 @@
+import jdk.nashorn.internal.scripts.JO;
+
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
@@ -220,6 +222,12 @@ public class JMorph extends JFrame {
         morph.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if(leftGrid.getImg() == null || rightGrid.getImg() == null){
+                    JOptionPane.showMessageDialog(null, "There must be two images to warp.");
+                    return;
+                }
+
+
                 File path = getDirectory();
                 if (path == null){
                     JOptionPane.showMessageDialog(null, "Invalid directory!");
@@ -229,7 +237,6 @@ public class JMorph extends JFrame {
                     path.mkdir();
 
                 String absolutePath = path.getAbsolutePath();
-                System.out.println(absolutePath);
 
                 int duration = options.getSeconds();
                 int fps = options.getFPS();
@@ -244,6 +251,11 @@ public class JMorph extends JFrame {
         preview.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if(leftGrid.getImg() == null || rightGrid.getImg() == null){
+                    JOptionPane.showMessageDialog(null, "There must be two images to warp.");
+                    return;
+                }
+
                 /*Start morph preview*/
                 int duration = options.getSeconds();
                 int fps = options.getFPS();
@@ -343,9 +355,10 @@ public class JMorph extends JFrame {
 
 
         settings.add(setPictures);
-        settings.add(morphButtons);
-        settings.add(ctrlPtBar);
         settings.add(editImage);
+        settings.add(ctrlPtBar);
+        settings.add(morphButtons);
+
 
         settingsScreen.add(settings);
         Dimension prefSize = new Dimension();
@@ -443,7 +456,6 @@ public class JMorph extends JFrame {
     }
 
     private void loadGrids(String filename){
-        System.out.println(filename);
         try{
             FileInputStream fileIn = new FileInputStream(filename);
             ObjectInputStream in = new ObjectInputStream(fileIn);
@@ -452,9 +464,11 @@ public class JMorph extends JFrame {
             //update the options menu for grid resolution
             options.setGridResolution(savedGrids[0].getGridWidth()-2, savedGrids[0].getGridHeight()-2);
 
+            //setting the image this way also updates the image editor
             gridControl.setImage1(savedGrids[0].getImg());
             gridControl.setImage2(savedGrids[1].getImg());
 
+            //copies the rest of the values to the grids
             leftGrid.copyGrid(savedGrids[0]);
             rightGrid.copyGrid(savedGrids[1]);
 

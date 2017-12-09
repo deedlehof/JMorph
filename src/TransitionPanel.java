@@ -136,8 +136,8 @@ public class TransitionPanel extends JPanel {
 
             if(directory != null){
                 try{
-                    File outputFile = new File(directory + "\\" + i + ".png");
-                    ImageIO.write(morphedImage, "png", outputFile);
+                    File outputFile = new File(directory + "\\" + i + ".jpeg");
+                    ImageIO.write(morphedImage, "jpeg", outputFile);
                 } catch (Exception e){
                     JOptionPane.showMessageDialog(null, e.getMessage());
                     return;

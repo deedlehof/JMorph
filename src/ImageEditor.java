@@ -117,6 +117,7 @@ public class ImageEditor extends JLabel {
 
     public void resetImage(){
         filteredImage = deepCopy(originalImage);
+        currentFilter = 0;
         repaint();
     }
 
