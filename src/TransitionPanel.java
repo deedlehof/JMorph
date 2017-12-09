@@ -162,7 +162,7 @@ public class TransitionPanel extends JPanel {
     /*
     * Look at src and dest points
     * Right now pts seem to be backwards
-    * src and dest triangles are backwards when we are applying morphs that are being done to src img
+    * src and dest triangles are backwards when we are applying morphs that are being done to src image
     * */
     private void warpTriangle(CtrlTriangle S, CtrlTriangle D, BufferedImage src, BufferedImage dest){
         /*
