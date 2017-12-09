@@ -1,4 +1,6 @@
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -45,21 +47,20 @@ public class ImageEditFrame extends JFrame{
             }
         });
 
-        brightLabel = new JLabel("Brightness Change: ");
+        brightLabel = new JLabel("Brightness: ");
 
         brightnessSlide = new JSlider(0, maxBrightness, maxBrightness/2);
         brightnessSlide.setMinorTickSpacing(5);
         brightnessSlide.setMajorTickSpacing(10);
         brightnessSlide.setPaintTicks(true);
-
-        applyBrightBtn = new JButton("Apply");
-        applyBrightBtn.addActionListener(new ActionListener() {
+        brightnessSlide.addChangeListener(new ChangeListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void stateChanged(ChangeEvent e) {
                 int brightVal = brightnessSlide.getValue();
                 editor.changeBrightness(brightVal/(maxBrightness/2.0));
             }
         });
+        applyBrightBtn = new JButton();
 
         resetBtn = new JButton("Reset");
         resetBtn.addActionListener(new ActionListener() {

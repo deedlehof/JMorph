@@ -54,13 +54,15 @@ public class Grid extends JPanel implements Serializable{
                 Point clickPnt = e.getPoint();
                 selectCorner1 = e.getPoint();
 
-                //reset if not a highlighted point else just move
+                //check all points to see if the click point is a ctrlpoint
                 for(int y = 1; y < height-1; y++) {
                     for (int x = 1; x < width-1; x++) {
+                        //the clicked point is a ctrlpoint
                         if(pntList[x][y].contains(clickPnt)){
                             isDragging = true;
                             clickedPoint = pntList[x][y];
-                            if(!pntInList(highlightedPoints, pntList[x][y])){ //do only 1 drag point
+                            //the clicked point isn't currently highlighted
+                            if(!pntInList(highlightedPoints, pntList[x][y])){
                                 resetDragPoints();
                                 highlightedPoints = new CtrlPoint[1];
                                 dragTriangles = new CtrlTriangle[1][];
@@ -85,20 +87,23 @@ public class Grid extends JPanel implements Serializable{
 
                 //if highlighting then get all covered points
                 if(isHighlighting) {
+                    isHighlighting = false;
                     selectCorner2 = e.getPoint();
                     resetDragPoints();
                     genHighlightPoly();
                     highlightedPoints = getHighlightedPoints();
 
+                    //if the highlight area has no points return
                     if(highlightedPoints == null) return;
 
+                    //get all of the effected triangles and activate all the points
                     dragTriangles = new CtrlTriangle[highlightedPoints.length][];
                     for(int i = 0; i < highlightedPoints.length; i++){
                         highlightedPoints[i].setStatus(true);
                         dragTriangles[i] = getPntTriangleNeighbors(highlightedPoints[i]);
                     }
                     repaint();
-                    isHighlighting = false;
+
                 }
             }
         });
@@ -166,6 +171,7 @@ public class Grid extends JPanel implements Serializable{
     }
 
     public void copyGrid(Grid grid){
+        //copies the values from the grid that is passed in
         this.width = grid.getGridWidth();
         this.height = grid.getGridHeight();
         this.pntList = grid.getCopyPntList();
@@ -189,6 +195,8 @@ public class Grid extends JPanel implements Serializable{
     }
 
     private boolean pntInList(CtrlPoint[] points, CtrlPoint findPnt){
+        //checks if the passed point is in the list of points
+
         if(points == null || points.length == 0) return false;
 
         for(int i = 0; i < points.length; i++){
@@ -199,10 +207,12 @@ public class Grid extends JPanel implements Serializable{
     }
 
     private CtrlPoint[] getHighlightedPoints(){
+        //generate the bounding polygon from the affected triangles
         genHighlightPoly();
 
         ArrayList<CtrlPoint> highlightedPoints = new ArrayList<>();
 
+        //check all points to see if they are withing the bounding polygon
         for(int y = 1; y < height-1; y++){
             for(int x = 1; x < width-1; x++){
                 CtrlPoint currPnt = pntList[x][y];
@@ -216,6 +226,8 @@ public class Grid extends JPanel implements Serializable{
     }
 
     private void genHighlightPoly(){
+        //creates the highlighting polygon
+
         Point corner3 = new Point(selectCorner2.x, selectCorner1.y);
         Point corner4 = new Point(selectCorner1.x, selectCorner2.y);
         Point[] highlightCorners = {selectCorner1, corner3, selectCorner2, corner4};
@@ -223,11 +235,14 @@ public class Grid extends JPanel implements Serializable{
     }
 
     private void generatePoints(){
+        //creates all of the points for the grid
+
         pntList = new CtrlPoint[width][height];
 
         int sepWidth = getWidth()/(width-1);  //gaps are 1 less than points
         int sepHeight = getHeight()/(height-1);
 
+        //create all the points not allowing the edges to be moved
         for(int y = 0; y < height; y++){
             for(int x = 0; x < width; x++){
                 if(x == 0 || y ==0 || x == width-1 || y == height-1) {
@@ -247,6 +262,8 @@ public class Grid extends JPanel implements Serializable{
     }
 
     public CtrlPoint[][] getCopyPntList(){
+        //returns a deep copy of the points that make up the grid
+
         CtrlPoint[][] cpyPnts = new CtrlPoint[width][height];
         for(int y = 0; y < height; y++){
             for(int x = 0; x < width; x++){
@@ -259,6 +276,8 @@ public class Grid extends JPanel implements Serializable{
     }
 
     private void generateTriangles(){
+        //generates the ctrltriangles based off of the points
+
         triangleList = new CtrlTriangle[(width-1)*2][height-1];
 
         for(int y  = 0; y < height-1; y++){
@@ -279,6 +298,8 @@ public class Grid extends JPanel implements Serializable{
     }
 
     private CtrlTriangle[] getPntTriangleNeighbors(CtrlPoint pnt){
+        //gets all of the triangles that are attached to the passed ctrlpoint
+
         CtrlTriangle[] controlledTriangles = new CtrlTriangle[6];
         int triangleXIndex = pnt.getGridX()*2 - 1;
         int triangleYIndex = pnt.getGridY() - 1;
@@ -294,6 +315,8 @@ public class Grid extends JPanel implements Serializable{
     }
 
     private boolean pointInTriangles(CtrlTriangle[] triangles, Point point){
+        //checks if the point is within the list of passed triangles
+
         for(int i = 0; i < triangles.length; i++){
             if(triangles[i].contains(point)) { return true; }
         }
@@ -301,27 +324,32 @@ public class Grid extends JPanel implements Serializable{
         return false;
     }
 
-
     public CtrlPoint[] getDragPoints() {
         return highlightedPoints;
     }
 
-
     public void changeActivePoint(int gridX, int gridY, boolean pntStatus){
+        //changes the active points in the grid
+
+        //if there are currently highlighted points then deactivate them
         if(highlightedPoints != null){
             for (CtrlPoint point: highlightedPoints) {
                 point.setStatus(false);
             }
             highlightedPoints = null;
         }
+
+        //activate the path at the grid position
         pntList[gridX][gridY].setStatus(pntStatus);
         if(pntStatus)
             repaint();
     }
 
-
     public void setGridResolution(int _width, int _height){
+        //don't update the grid if the resolution doesn't change
         if(width == _width+2 && height == _height+2) return;
+
+        //update the grid and regenerate the points and triangles
         this.width = _width + 2;
         this.height = _height + 2;
 
@@ -335,6 +363,8 @@ public class Grid extends JPanel implements Serializable{
     public int getGridHeight() { return height; }
 
     public void setPntRadius(int _radius){
+        //set the radius of the control points on the grid
+
         this.radius = _radius;
         for(int y = 0; y < height; y++){
             for(int x = 0; x < width; x++){
@@ -363,6 +393,7 @@ public class Grid extends JPanel implements Serializable{
     }
 
     private Polygon polygonize(Point[] polyPoints){
+        //takes a list of points and turns them into a polygon
 
         Polygon tempPoly = new Polygon();
 
@@ -377,6 +408,8 @@ public class Grid extends JPanel implements Serializable{
     //write and read are used to write and read the BufferedImage when serializing
     //BufferedImages don't extend serializable
     private void writeObject(ObjectOutputStream out) throws IOException{
+        if(origImg == null) return;
+
         out.defaultWriteObject();
         ImageIO.write(origImg, "png", out);
     }

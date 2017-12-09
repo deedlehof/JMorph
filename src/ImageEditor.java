@@ -7,6 +7,12 @@ public class ImageEditor extends JLabel {
     private BufferedImage originalImage;
     private BufferedImage filteredImage;
 
+    private int currentFilter = 0;
+
+    private static final int LOWPASS = 1;
+    private static final int SHARPEN = 2;
+    private static final int EDGE = 3;
+
     private final float[] LOWPASS3x3 =
             {0.1f, 0.1f, 0.1f, 0.1f, 0.2f, 0.1f, 0.1f, 0.1f, 0.1f};
     private final float[] SHARPEN3x3 =
@@ -38,6 +44,8 @@ public class ImageEditor extends JLabel {
     }
 
     public void blurImage(){
+        currentFilter = LOWPASS;
+
         Kernel kernel = new Kernel(3, 3, LOWPASS3x3);
         ConvolveOp cop = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
         BufferedImage newbim = deepCopy(originalImage);
@@ -47,6 +55,8 @@ public class ImageEditor extends JLabel {
     }
 
     public void sharpenImage(){
+        currentFilter = SHARPEN;
+
         Kernel kernel = new Kernel(3, 3, SHARPEN3x3);
         ConvolveOp cop = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
         BufferedImage newbim = deepCopy(originalImage);
@@ -56,6 +66,8 @@ public class ImageEditor extends JLabel {
     }
 
     public void edgeDetect(){
+        currentFilter = EDGE;
+
         Kernel kernel = new Kernel(3, 3, EDGE3x3);
         ConvolveOp cop = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
         BufferedImage newbim = deepCopy(originalImage);
@@ -67,6 +79,8 @@ public class ImageEditor extends JLabel {
     public void changeBrightness(double factor){
         if (factor < 0) { factor = 0; }
         if (factor > 2) { factor = 2; }
+
+        applyFilter(currentFilter);
 
         for(int y = 0; y < filteredImage.getHeight(); y++){
             for(int x = 0; x < filteredImage.getWidth(); x++){
@@ -82,6 +96,23 @@ public class ImageEditor extends JLabel {
             }
         }
         repaint();
+    }
+
+    private void applyFilter(int filterOption){
+        switch (filterOption){
+            case 0:
+                filteredImage = deepCopy(originalImage);
+                break;
+            case LOWPASS:
+                blurImage();
+                break;
+            case SHARPEN:
+                sharpenImage();
+                break;
+            case EDGE:
+                edgeDetect();
+                break;
+        }
     }
 
     public void resetImage(){

@@ -16,6 +16,7 @@ public class GridPairController {
         this.grid2 = _grid2;
 
 
+        //keeps the second grid highlight points synced with the first grid
         grid1.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -41,6 +42,7 @@ public class GridPairController {
             }
         });
 
+        //keeps the first grid highlight points synced with the second grid
         grid2.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {

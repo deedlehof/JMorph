@@ -180,6 +180,14 @@ public class OptionFrame extends JFrame {
         return size > 0;
     }
 
+    public void setGridResolution(int width, int height){
+        this.gridWidth = width;
+        this.gridHeight = height;
+
+        widthInField.setText(String.valueOf(width));
+        heightInField.setText(String.valueOf(height));
+    }
+
     public int getGridWidth(){
         if(isInteger(widthInField.getText()))
             gridWidth = Integer.parseInt(widthInField.getText());

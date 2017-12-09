@@ -16,7 +16,7 @@ public class JMorph extends JFrame {
     private Grid leftGrid, rightGrid;
     private JPanel master, settings, settingsScreen, morphButtons, ctrlPtBar, setPictures; //contains slider bar and buttons
     private JButton morph, leftImg, rightImg, preview;
-    private JSlider ctrlPts;
+    private JComboBox ctrlPts;
     private JMenuBar menu; //contain exit, restart, settings, etc.?
     private GridBagLayout layout;
     private JPanel screen, rightGridScrn, leftGridScrn;
@@ -236,17 +236,30 @@ public class JMorph extends JFrame {
 
         ctrlPtBar = new JPanel();
         ctrlPtBar.setLayout(new BoxLayout(ctrlPtBar, BoxLayout.X_AXIS));
-        ptsDesc = new JLabel("Select control point resolution: ");
-        ctrlPts = new JSlider(3, 25);
-        ctrlPts.addChangeListener(new ChangeListener() {
+        ptsDesc = new JLabel("Grid Resolution: ");
+        ctrlPts = new JComboBox(new String[]{"5X5", "10X10", "20X20"});
+        ctrlPts.setSelectedIndex(1);
+        ctrlPts.addActionListener(new ActionListener() {
             @Override
-            public void stateChanged(ChangeEvent e) {
-                gridControl.setGridResolution(ctrlPts.getValue(), ctrlPts.getValue());
+            public void actionPerformed(ActionEvent e) {
+                String s = (String)ctrlPts.getSelectedItem();
+                switch (s){
+                    case "5X5":
+                        options.setGridResolution(5, 5);
+                        gridControl.setGridResolution(5, 5);
+                        break;
+                    case "10X10":
+                        options.setGridResolution(10, 10);
+                        gridControl.setGridResolution(10, 10);
+                        break;
+                    case "20X20":
+                        options.setGridResolution(20, 20);
+                        gridControl.setGridResolution(20, 20);
+                        break;
+                }
             }
         });
-        ctrlPts.setMajorTickSpacing(10);
-        ctrlPts.setMinorTickSpacing(1);
-        ctrlPts.setPaintTicks(true);
+
         ctrlPtBar.add(ptsDesc);
         ctrlPtBar.add(ctrlPts);
 
@@ -286,6 +299,10 @@ public class JMorph extends JFrame {
         editLeft.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if(leftGrid.getImg() == null){
+                    JOptionPane.showMessageDialog(null, "No image to edit.");
+                    return;
+                }
                 gridControl.editImage1();
             }
         });
@@ -293,6 +310,10 @@ public class JMorph extends JFrame {
         editRight.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if(rightGrid.getImg() == null){
+                    JOptionPane.showMessageDialog(null, "No image to edit.");
+                    return;
+                }
                 gridControl.editImage2();
             }
         });
@@ -385,6 +406,7 @@ public class JMorph extends JFrame {
             FileOutputStream fileOut = new FileOutputStream(filename);
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(saveGrids);
+            fileOut.close();
             out.close();
         } catch (IOException ex){
             System.out.println(ex.getMessage());
@@ -401,6 +423,14 @@ public class JMorph extends JFrame {
             leftGrid.copyGrid(savedGrids[0]);
             rightGrid.copyGrid(savedGrids[1]);
 
+            gridControl.setImage1(savedGrids[0].getImg());
+            gridControl.setImage2(savedGrids[1].getImg());
+
+            //update the options menu for grid resolution
+            options.setGridResolution(leftGrid.getGridWidth()-2, leftGrid.getGridHeight()-2);
+
+            fileIn.close();
+            in.close();
         } catch (Exception e){
             System.out.println(e.getMessage());
         }
