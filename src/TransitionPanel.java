@@ -5,10 +5,6 @@ import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 
 
-/*
-The warping part of the morph doesn't work at all.  I'm unsure how to get it to work.  The images do fade though.
- */
-
 public class TransitionPanel extends JPanel {
 
     private int gridWidth, gridHeight;
@@ -28,7 +24,7 @@ public class TransitionPanel extends JPanel {
     private Object ALIASING = RenderingHints.VALUE_ANTIALIAS_ON;
     private Object INTERPOLATION = RenderingHints.VALUE_INTERPOLATION_BICUBIC;
 
-    boolean showMorphed; //tells paintcomponent whether to show the morphed image or not
+    private boolean showMorphed; //tells paintcomponent whether to show the morphed image or not
 
     /*
     * Transition happens between 2 grids
@@ -97,10 +93,10 @@ public class TransitionPanel extends JPanel {
         }
 
         int sleepTime = 1000/framesPerSecond;
-        int loopCount = seconds*framesPerSecond;
+        int loopCount = seconds * framesPerSecond;
         //TODO: src movement is reversed, dest movement is fine
         for(int i = 0; i < loopCount; i++){
-            double percent = (i+1)/(double)loopCount;
+            double percent = (i + 1)/(double)loopCount;
             //calculate the position of the points based on percentage done
             for(int y = 0; y < gridHeight; y++) {
                 for (int x = 0; x < gridWidth; x++) {
@@ -113,7 +109,7 @@ public class TransitionPanel extends JPanel {
 
             //warp image
             currImage = warpColors(originalGrid.getImg(), destGrid.getImg(), percent);
-            warpTriangles(destTriangleList/*TODO: investigate, could be a problem*/, morphedImage); //use dest triangles, but apply changes to the copied image
+            warpTriangles(destTriangleList, morphedImage); //use dest triangles, but apply changes to the copied image
             showMorphed = true; //tell paintcomponent to show the morphed image
 
             this.repaint();
@@ -123,10 +119,7 @@ public class TransitionPanel extends JPanel {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
-
         }
-
     }
 
 
@@ -153,7 +146,6 @@ public class TransitionPanel extends JPanel {
                 outImage.setRGB(x, y, new Color(red, green, blue, alpha).getRGB());
             }
         }
-
         return outImage;
     }
     /*
@@ -167,10 +159,8 @@ public class TransitionPanel extends JPanel {
         }
     }
 
-    //based on slide set 7.  Isn't correct
     /*
-    * TODO: need to add Gauss and solve stuff in Seales example
-    * Look at src and dest points (start image might need morphed first)
+    * Look at src and dest points
     * Right now pts seem to be backwards
     * */
     private void warpTriangle(CtrlTriangle S, CtrlTriangle D, BufferedImage src, BufferedImage dest){
@@ -211,9 +201,7 @@ public class TransitionPanel extends JPanel {
         //System.out.println("Affine:\t" + x[0] + ", " + x[1] + ", " + x[2] ); //debug
         //System.out.println("\t" + y[0] + ", " + y[1] + ", " + y[2] );
 
-        //TODO: might need to change around from here
-        //TODO: apply affine transform to a copy of dest, not dest itself
-        //Apply Affine Transform to transform using the info we have (x and y arrays out of Gauss and solver, NOT src values)
+        //Apply Affine Transform to transform using the info we have (x and y arrays out of Gauss and solver)
         AffineTransform af = new AffineTransform(x[0], y[0], x[1], y[1], x[2], y[2]);
 
         GeneralPath destPath = new GeneralPath(GeneralPath.WIND_EVEN_ODD);
@@ -268,7 +256,7 @@ public class TransitionPanel extends JPanel {
         for(i = 0; i < n; i++)
         {
             l[i] = i; //initialize values
-            smax = 0; //initialize
+            smax = 0; //reset
             for(j = 0; j < n; j++)
             {
                 smax = Math.max(smax, Math.abs(mat[i][j])); //get maximum scale factor along a row of the matrix
@@ -343,14 +331,12 @@ public class TransitionPanel extends JPanel {
 
         if(showMorphed)
         {
-            System.out.println("Showing morphed image");
             if (morphedImage != null) {
                 Graphics2D bg = (Graphics2D) g;
                 bg.drawImage(morphedImage, getX(), getY(), null);
             }
         }
         else {
-            System.out.println("Showing original image");
             if (currImage != null) {
                 Graphics2D bg = (Graphics2D) g;
                 bg.drawImage(currImage, getX(), getY(), null);
