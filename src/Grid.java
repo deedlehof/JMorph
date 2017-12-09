@@ -381,9 +381,14 @@ public class Grid extends JPanel implements Serializable{
 
     public void setImg(BufferedImage i)
     {
-        origImg = i;
+
         //change width the point generator must traverse
         this.setSize(i.getWidth(), i.getHeight());
+
+        if(origImg == null || origImg.getWidth() != i.getWidth() || origImg.getHeight() != i.getHeight())
+            resetGrid();
+        origImg = i;
+
         this.repaint();
     }
 

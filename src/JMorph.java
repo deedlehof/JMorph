@@ -25,7 +25,7 @@ public class JMorph extends JFrame {
     private JPanel screen, rightGridScrn, leftGridScrn;
     private JLabel ptsDesc;
     private GridBagConstraints leftGridConst, rightGridConst;
-    public final static int MAX_DIMENSION = 600; //current max allowable size for the grid
+    public final static int MAX_DIMENSION = 550; //current max allowable size for the grid
 
     private String saveFileName = null;
 
@@ -60,7 +60,7 @@ public class JMorph extends JFrame {
         pack();
         gridControl.resetGrids();
         Dimension frameSize = master.getPreferredSize();
-        setSize(frameSize.width + 50, frameSize.height + 100);
+        setSize(frameSize.width + 50, frameSize.height + 25);
         setVisible(true);
     }
 
