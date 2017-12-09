@@ -147,7 +147,7 @@ public class TransitionPanel extends JPanel {
                 this.repaint();
 
                 try {
-                    Thread.sleep(sleepTime); //TODO return to sleeptime
+                    Thread.sleep(sleepTime);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -159,12 +159,22 @@ public class TransitionPanel extends JPanel {
 
     public BufferedImage warpColors(BufferedImage src, BufferedImage dest, double percent){
         BufferedImage outImage = new BufferedImage(src.getWidth(null), src.getHeight(null), BufferedImage.TYPE_INT_RGB);
-        /*
-        *  TODO: Fix exception thrown when size and aspect ratio of images don't match exactly
-        *
-        * */
-        for(int y = 0; y < src.getHeight(); y++){
-            for(int x = 0; x < src.getWidth(); x++){
+
+        //crop size down to smaller image if necessary
+        int checkSizeX, checkSizeY;
+        if(src.getWidth() < dest.getWidth())
+            checkSizeX = src.getWidth();
+        else
+            checkSizeX = dest.getWidth();
+
+        if(src.getHeight() < dest.getHeight())
+            checkSizeY = src.getHeight();
+        else
+            checkSizeY = dest.getHeight();
+
+
+        for(int y = 0; y < checkSizeY; y++){
+            for(int x = 0; x < checkSizeX; x++){
                 Color startColor = new Color(src.getRGB(x, y));
                 Color endColor = new Color(dest.getRGB(x, y));
                 int red, green, blue, alpha;
@@ -243,7 +253,6 @@ public class TransitionPanel extends JPanel {
 
         //Apply Affine Transform to transform using the info we have (x and y arrays out of Gauss and solver)
         AffineTransform af = new AffineTransform(x[0], y[0], x[1], y[1], x[2], y[2]);
-        //TODO: seems to be going in reverse for src image?
 
         GeneralPath destPath = new GeneralPath(GeneralPath.WIND_EVEN_ODD);
 

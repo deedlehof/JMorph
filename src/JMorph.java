@@ -225,6 +225,8 @@ public class JMorph extends JFrame {
                     JOptionPane.showMessageDialog(null, "Invalid directory!");
                     return;
                 }
+                if(!path.exists())
+                    path.mkdir();
 
                 String absolutePath = path.getAbsolutePath();
                 System.out.println(absolutePath);
