@@ -98,13 +98,14 @@ public class TransitionPanel extends JPanel {
 
         int sleepTime = 1000/framesPerSecond;
         int loopCount = seconds*framesPerSecond;
+        //TODO: src movement is reversed, dest movement is fine
         for(int i = 0; i < loopCount; i++){
             double percent = (i+1)/(double)loopCount;
             //calculate the position of the points based on percentage done
-            for(int y = 0; y < gridHeight; y++){
-                for(int x = 0; x < gridWidth; x++){
-                    int xDiff = (int)(percent*xDifference[x][y]);
-                    int yDiff = (int)(percent*yDifference[x][y]);
+            for(int y = 0; y < gridHeight; y++) {
+                for (int x = 0; x < gridWidth; x++) {
+                    int xDiff = (int) ((1 - percent) * xDifference[x][y]);
+                    int yDiff = (int) ((1 - percent) * yDifference[x][y]);
                     pntList[x][y].x = xOriginal[x][y] + xDiff;
                     pntList[x][y].y = yOriginal[x][y] + yDiff;
                 }
@@ -207,8 +208,8 @@ public class TransitionPanel extends JPanel {
         double[] y = new double[3];
         solve(3, mat, l, by, y);
 
-        System.out.println("Affine:\t" + x[0] + ", " + x[1] + ", " + x[2] ); //debug
-        System.out.println("\t" + y[0] + ", " + y[1] + ", " + y[2] );
+        //System.out.println("Affine:\t" + x[0] + ", " + x[1] + ", " + x[2] ); //debug
+        //System.out.println("\t" + y[0] + ", " + y[1] + ", " + y[2] );
 
         //TODO: might need to change around from here
         //TODO: apply affine transform to a copy of dest, not dest itself
