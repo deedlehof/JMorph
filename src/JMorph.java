@@ -351,7 +351,7 @@ public class JMorph extends JFrame {
     public BufferedImage getBufferedImage(Grid g, String path)
     {
         Image img = new ImageIcon(path).getImage();
-        Dimension scaled = scaleImg(img, g);
+        Dimension scaled = scaleImg(img);
         img = img.getScaledInstance((int)scaled.getWidth(), (int)scaled.getHeight(), Image.SCALE_SMOOTH);
 
         MediaTracker tracker = new MediaTracker(new Component() {});
@@ -368,7 +368,7 @@ public class JMorph extends JFrame {
     }
 
     //scale but maintain aspect ratio
-    private Dimension scaleImg(Image i, Grid g)
+    private Dimension scaleImg(Image i)
     {
         Dimension d;
         double widthScale = MAX_DIMENSION / (double)i.getWidth(null);

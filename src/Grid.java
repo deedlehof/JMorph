@@ -1,9 +1,13 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -31,7 +35,7 @@ public class Grid extends JPanel implements Serializable{
     private boolean drawTriangles = true;
     private int radius = 5;
 
-    private BufferedImage origImg = null;
+    private transient BufferedImage origImg = null;
 
     public Grid(int _width, int _height){
         this.width = _width + 2; //add two for edge points
@@ -367,6 +371,19 @@ public class Grid extends JPanel implements Serializable{
         }
 
         return tempPoly;
+    }
+
+
+    //write and read are used to write and read the BufferedImage when serializing
+    //BufferedImages don't extend serializable
+    private void writeObject(ObjectOutputStream out) throws IOException{
+        out.defaultWriteObject();
+        ImageIO.write(origImg, "png", out);
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        origImg = ImageIO.read(in);
     }
 
     @Override
