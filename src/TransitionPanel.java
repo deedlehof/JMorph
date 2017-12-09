@@ -125,7 +125,7 @@ public class TransitionPanel extends JPanel {
     public BufferedImage warpColors(BufferedImage src, BufferedImage dest, double percent){
         BufferedImage outImage = new BufferedImage(src.getWidth(null), src.getHeight(null), BufferedImage.TYPE_INT_RGB);
         /*
-        *  TODO: Fix exception thrown when size and aspect ratio of images don't match exactly
+        *  TODO: Fix exception thrown when size and aspect ratio of images are way off
         *
         * */
         for(int y = 0; y < src.getHeight(); y++){
@@ -147,10 +147,7 @@ public class TransitionPanel extends JPanel {
         }
         return outImage;
     }
-    /*
-    * Warping is weird
-    * src image works in reverse to dest image morphing; source and dest triangles need to be swapped for src image
-    * */
+
     private void warpTriangles(CtrlTriangle[][] destTriangles, BufferedImage destImage){
         for(int y = 0; y < gridHeight-1; y++){
             for(int x = 0; x < (gridWidth-1)*2; x++){
@@ -159,15 +156,12 @@ public class TransitionPanel extends JPanel {
         }
     }
 
-    /*
-    * Look at src and dest points
-    * Right now pts seem to be backwards
-    * src and dest triangles are backwards when we are applying morphs that are being done to src image
-    * */
     private void warpTriangle(CtrlTriangle S, CtrlTriangle D, BufferedImage src, BufferedImage dest){
         /*
         * Get our current 3x3 matrix
         * run through Gauss
+        * solve
+        * apply Affine Transform
         * */
 
         double[][] mat = new double[3][3]; //3x3 matrix
@@ -206,7 +200,6 @@ public class TransitionPanel extends JPanel {
 
         //Apply Affine Transform to transform using the info we have (x and y arrays out of Gauss and solver)
         AffineTransform af = new AffineTransform(x[0], y[0], x[1], y[1], x[2], y[2]);
-        //TODO: seems to be going in reverse for src image?
 
         GeneralPath destPath = new GeneralPath(GeneralPath.WIND_EVEN_ODD);
 
